@@ -1,0 +1,145 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { AppStateContext } from '../hooks/useAppState';
+import { useFocusSuggestion } from '../hooks/useFocusSuggestion';
+import { today } from '../utils/dateHelpers';
+import FocusSuggestion from '../components/today/FocusSuggestion';
+import ContextSelector from '../components/today/ContextSelector';
+import TaskCard from '../components/tasks/TaskCard';
+import TaskDetail from '../components/tasks/TaskDetail';
+import TaskForm from '../components/tasks/TaskForm';
+
+interface Props {
+  ctx: AppStateContext;
+}
+
+export default function TodayScreen({ ctx }: Props) {
+  const { t } = useTranslation();
+  const { state, addTask, updateTask, completeTask, reopenTask, deleteTask, markStarted,
+    incrementCounter, decrementCounter, toggleSubtask, setActiveContext, updateDayNote } = ctx;
+
+  const { suggestion, skipSuggestion } = useFocusSuggestion(state);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [addingTask, setAddingTask] = useState(false);
+
+  const todayStr = today();
+  const todayLog = state.dayLogs.find(l => l.date === todayStr);
+
+  const todayTasks = state.tasks.filter(t =>
+    t.status === 'active' && (
+      t.dueDate === todayStr ||
+      (!t.dueDate && t.lastWorkedOn === todayStr)
+    )
+  );
+
+  const completedToday = state.tasks.filter(t =>
+    t.status === 'completed' && t.completedAt?.startsWith(todayStr)
+  );
+
+  const selectedTask = selectedTaskId ? state.tasks.find(t => t.id === selectedTaskId) : null;
+  const getCategory = (id: string) => state.categories.find(c => c.id === id);
+  const getProject = (id?: string) => id ? state.projects.find(p => p.id === id) : undefined;
+
+  return (
+    <div className="screen">
+      <div className="screen-header">
+        <h1 className="screen-title">{t('nav.today')}</h1>
+        <button className="btn btn-outline btn-sm" onClick={() => setAddingTask(true)}>
+          + {t('task.add')}
+        </button>
+      </div>
+
+      {/* Context selector */}
+      <ContextSelector context={state.activeContext} onChange={setActiveContext} />
+
+      {/* Focus suggestion */}
+      <FocusSuggestion
+        suggestion={suggestion}
+        onSkip={skipSuggestion}
+        onOpen={id => setSelectedTaskId(id)}
+        onStart={id => { markStarted(id); setSelectedTaskId(id); }}
+      />
+
+      {/* Today's tasks */}
+      {todayTasks.length > 0 && (
+        <section>
+          <h2 className="section-title">{t('today.todayTasks')}</h2>
+          <div className="task-list">
+            {todayTasks.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                category={getCategory(task.categoryId)}
+                onOpen={() => setSelectedTaskId(task.id)}
+                onComplete={() => completeTask(task.id)}
+                onIncrement={() => incrementCounter(task.id)}
+                onDecrement={() => decrementCounter(task.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Completed today */}
+      {completedToday.length > 0 && (
+        <section>
+          <h2 className="section-title">{t('today.completedToday')} ({completedToday.length})</h2>
+          <div className="task-list">
+            {completedToday.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                category={getCategory(task.categoryId)}
+                onOpen={() => setSelectedTaskId(task.id)}
+                onComplete={() => reopenTask(task.id)}
+                onIncrement={() => incrementCounter(task.id)}
+                onDecrement={() => decrementCounter(task.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Day note */}
+      <section>
+        <h2 className="section-title">{t('review.dayNote')}</h2>
+        <textarea
+          className="input day-note-area"
+          placeholder={t('review.dayNotePlaceholder')}
+          value={todayLog?.note ?? ''}
+          onChange={e => updateDayNote(todayStr, e.target.value)}
+        />
+      </section>
+
+      {/* Task detail modal */}
+      {selectedTask && (
+        <TaskDetail
+          task={selectedTask}
+          category={getCategory(selectedTask.categoryId)}
+          project={getProject(selectedTask.projectId)}
+          categories={state.categories}
+          projects={state.projects}
+          onClose={() => setSelectedTaskId(null)}
+          onUpdate={changes => updateTask(selectedTask.id, changes)}
+          onDelete={() => { deleteTask(selectedTask.id); setSelectedTaskId(null); }}
+          onComplete={() => completeTask(selectedTask.id)}
+          onReopen={() => reopenTask(selectedTask.id)}
+          onToggleSubtask={stId => toggleSubtask(selectedTask.id, stId)}
+          onIncrement={() => incrementCounter(selectedTask.id)}
+          onDecrement={() => decrementCounter(selectedTask.id)}
+        />
+      )}
+
+      {/* Add task modal */}
+      {addingTask && (
+        <TaskForm
+          isOpen
+          onClose={() => setAddingTask(false)}
+          categories={state.categories}
+          projects={state.projects}
+          onSave={data => { addTask(data); }}
+        />
+      )}
+    </div>
+  );
+}

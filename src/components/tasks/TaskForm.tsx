@@ -1,0 +1,339 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Task, Category, Project, Priority, TaskMode, TaskLocation, ProgressType } from '../../types';
+import { generateId } from '../../utils/storage';
+import Modal from '../ui/Modal';
+
+interface FormData {
+  title: string;
+  description: string;
+  categoryId: string;
+  projectId: string;
+  priority: Priority;
+  mode: TaskMode;
+  location: TaskLocation;
+  dueDate: string;
+  estimatedMinutes: string;
+  isRecurring: boolean;
+  recurringType: 'daily' | 'weekly' | 'monthly';
+  recurringInterval: string;
+  recurringDaysOfWeek: number[];
+  progressType: ProgressType;
+  progressTotal: string;
+  progressUnit: string;
+  subTasks: { id: string; title: string }[];
+}
+
+function taskToForm(task: Task): FormData {
+  return {
+    title: task.title,
+    description: task.description ?? '',
+    categoryId: task.categoryId,
+    projectId: task.projectId ?? '',
+    priority: task.priority,
+    mode: task.mode,
+    location: task.location,
+    dueDate: task.dueDate ?? '',
+    estimatedMinutes: task.estimatedMinutes?.toString() ?? '',
+    isRecurring: task.isRecurring,
+    recurringType: task.recurringPattern?.type ?? 'daily',
+    recurringInterval: task.recurringPattern?.interval.toString() ?? '1',
+    recurringDaysOfWeek: task.recurringPattern?.daysOfWeek ?? [],
+    progressType: task.progress.type,
+    progressTotal: task.progress.total?.toString() ?? '',
+    progressUnit: task.progress.unit ?? '',
+    subTasks: task.subTasks?.map(st => ({ id: st.id, title: st.title })) ?? [],
+  };
+}
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (task: Omit<Task, 'id' | 'createdAt'>) => void;
+  onDelete?: () => void;
+  task?: Task;
+  categories: Category[];
+  projects: Project[];
+}
+
+const PRIORITY_OPTS: Priority[] = ['p1', 'p2', 'p3', 'p4'];
+const DAY_INDICES = [1, 2, 3, 4, 5, 6, 0];
+
+export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, categories, projects }: Props) {
+  const { t } = useTranslation();
+
+  const [form, setForm] = useState<FormData>(() =>
+    task ? taskToForm(task) : {
+      title: '', description: '', categoryId: categories[0]?.id ?? '',
+      projectId: '', priority: 'p4', mode: 'digital', location: 'anywhere',
+      dueDate: '', estimatedMinutes: '', isRecurring: false,
+      recurringType: 'daily', recurringInterval: '1', recurringDaysOfWeek: [],
+      progressType: 'checkbox', progressTotal: '', progressUnit: '', subTasks: [],
+    }
+  );
+
+  const set = <K extends keyof FormData>(key: K, val: FormData[K]) =>
+    setForm(prev => ({ ...prev, [key]: val }));
+
+  const filteredProjects = projects.filter(p => !p.isArchived && p.categoryId === form.categoryId);
+
+  const handleSave = () => {
+    if (!form.title.trim()) return;
+    onSave({
+      title: form.title.trim(),
+      description: form.description.trim() || undefined,
+      categoryId: form.categoryId,
+      projectId: form.projectId || undefined,
+      priority: form.priority,
+      mode: form.mode,
+      location: form.mode === 'digital' ? 'anywhere' : form.location,
+      dueDate: form.dueDate || undefined,
+      estimatedMinutes: form.estimatedMinutes ? parseInt(form.estimatedMinutes) : undefined,
+      isRecurring: form.isRecurring,
+      recurringPattern: form.isRecurring ? {
+        type: form.recurringType,
+        interval: parseInt(form.recurringInterval) || 1,
+        daysOfWeek: form.recurringType === 'weekly' ? form.recurringDaysOfWeek : undefined,
+      } : undefined,
+      progress: {
+        type: form.progressType,
+        current: form.progressType === 'counter' ? (task?.progress.current ?? 0) : undefined,
+        total: form.progressType === 'counter' && form.progressTotal ? parseInt(form.progressTotal) : undefined,
+        unit: form.progressType === 'counter' && form.progressUnit ? form.progressUnit : undefined,
+      },
+      subTasks: form.progressType === 'subtasks'
+        ? form.subTasks.map(st => ({ id: st.id, title: st.title, isCompleted: false }))
+        : undefined,
+      status: task?.status ?? 'active',
+      completedAt: task?.completedAt,
+      lastWorkedOn: task?.lastWorkedOn,
+    });
+    onClose();
+  };
+
+  const toggleDay = (d: number) =>
+    set('recurringDaysOfWeek',
+      form.recurringDaysOfWeek.includes(d)
+        ? form.recurringDaysOfWeek.filter(x => x !== d)
+        : [...form.recurringDaysOfWeek, d]
+    );
+
+  const addSubtask = () =>
+    set('subTasks', [...form.subTasks, { id: generateId(), title: '' }]);
+
+  const updateSubtask = (id: string, title: string) =>
+    set('subTasks', form.subTasks.map(st => st.id === id ? { ...st, title } : st));
+
+  const removeSubtask = (id: string) =>
+    set('subTasks', form.subTasks.filter(st => st.id !== id));
+
+  const footer = (
+    <>
+      {onDelete && (
+        <button className="btn btn-danger btn-md" style={{ marginRight: 'auto' }}
+          onClick={() => { if (confirm(t('form.confirmDelete'))) { onDelete(); onClose(); } }}>
+          {t('common.delete')}
+        </button>
+      )}
+      <button className="btn btn-ghost btn-md" onClick={onClose}>{t('common.cancel')}</button>
+      <button className="btn btn-primary btn-md" onClick={handleSave} disabled={!form.title.trim()}>
+        {t('common.save')}
+      </button>
+    </>
+  );
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={task ? t('form.editTask') : t('form.newTask')} footer={footer}>
+      <div className="form-section">
+        {/* Title */}
+        <div>
+          <label className="input-label">{t('form.title')}</label>
+          <input className="input" placeholder={t('form.titlePlaceholder')}
+            value={form.title} onChange={e => set('title', e.target.value)}
+            autoFocus />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="input-label">{t('form.description')}</label>
+          <textarea className="input day-note-area" style={{ minHeight: 72 }}
+            placeholder={t('form.descPlaceholder')}
+            value={form.description} onChange={e => set('description', e.target.value)} />
+        </div>
+
+        <hr className="form-divider" />
+
+        {/* Category + Project */}
+        <div className="input-row">
+          <div>
+            <label className="input-label">{t('form.category')}</label>
+            <select className="input" value={form.categoryId}
+              onChange={e => { set('categoryId', e.target.value); set('projectId', ''); }}>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="input-label">{t('form.project')}</label>
+            <select className="input" value={form.projectId} onChange={e => set('projectId', e.target.value)}>
+              <option value="">{t('common.noProject')}</option>
+              {filteredProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Priority */}
+        <div>
+          <label className="input-label">{t('form.priority')}</label>
+          <div className="mode-toggle">
+            {PRIORITY_OPTS.map(p => (
+              <button key={p} className={`mode-toggle-btn${form.priority === p ? ' active' : ''}`}
+                onClick={() => set('priority', p)}>
+                {t(`priority.${p}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <hr className="form-divider" />
+
+        {/* Mode */}
+        <div>
+          <label className="input-label">{t('form.mode')}</label>
+          <div className="mode-toggle">
+            <button className={`mode-toggle-btn${form.mode === 'digital' ? ' active' : ''}`}
+              onClick={() => set('mode', 'digital')}>
+              💻 {t('mode.digital')}
+            </button>
+            <button className={`mode-toggle-btn${form.mode === 'analog' ? ' active' : ''}`}
+              onClick={() => set('mode', 'analog')}>
+              🤝 {t('mode.analog')}
+            </button>
+          </div>
+        </div>
+
+        {/* Location (analog only) */}
+        {form.mode === 'analog' && (
+          <div>
+            <label className="input-label">{t('form.location')}</label>
+            <div className="mode-toggle">
+              {(['anywhere', 'home', 'outside'] as TaskLocation[]).map(loc => (
+                <button key={loc} className={`mode-toggle-btn${form.location === loc ? ' active' : ''}`}
+                  onClick={() => set('location', loc)}>
+                  {loc === 'anywhere' ? '🌐' : loc === 'home' ? '🏠' : '🗺️'} {t(`location.${loc}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <hr className="form-divider" />
+
+        {/* Due date + Effort */}
+        <div className="input-row">
+          <div>
+            <label className="input-label">{t('form.dueDate')}</label>
+            <input type="date" className="input" value={form.dueDate}
+              onChange={e => set('dueDate', e.target.value)} />
+          </div>
+          <div>
+            <label className="input-label">{t('form.estimatedMinutes')}</label>
+            <input type="number" className="input" placeholder="30" min="1"
+              value={form.estimatedMinutes} onChange={e => set('estimatedMinutes', e.target.value)} />
+          </div>
+        </div>
+
+        {/* Recurring */}
+        <div>
+          <div className="toggle-row">
+            <span className="toggle-label">{t('form.recurring')}</span>
+            <button className={`toggle${form.isRecurring ? ' on' : ''}`}
+              onClick={() => set('isRecurring', !form.isRecurring)} />
+          </div>
+          {form.isRecurring && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+              <div className="mode-toggle">
+                {(['daily', 'weekly', 'monthly'] as const).map(rt => (
+                  <button key={rt} className={`mode-toggle-btn${form.recurringType === rt ? ' active' : ''}`}
+                    onClick={() => set('recurringType', rt)}>
+                    {t(`recurring.${rt}`)}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{t('form.interval')}</span>
+                <input type="number" className="input" min="1" max="99"
+                  style={{ width: 70 }} value={form.recurringInterval}
+                  onChange={e => set('recurringInterval', e.target.value)} />
+                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>{t('recurring.days')}</span>
+              </div>
+              {form.recurringType === 'weekly' && (
+                <div className="day-chips">
+                  {DAY_INDICES.map(d => (
+                    <button key={d} className={`day-chip${form.recurringDaysOfWeek.includes(d) ? ' active' : ''}`}
+                      onClick={() => toggleDay(d)}>
+                      {t(`days.${d}`)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <hr className="form-divider" />
+
+        {/* Progress type */}
+        <div>
+          <label className="input-label">{t('form.progressType')}</label>
+          <div className="mode-toggle">
+            {(['checkbox', 'counter', 'subtasks'] as ProgressType[]).map(pt => (
+              <button key={pt} className={`mode-toggle-btn${form.progressType === pt ? ' active' : ''}`}
+                onClick={() => set('progressType', pt)}>
+                {t(`progressType.${pt}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Counter fields */}
+        {form.progressType === 'counter' && (
+          <div className="input-row">
+            <div>
+              <label className="input-label">{t('form.total')}</label>
+              <input type="number" className="input" placeholder="10" min="1"
+                value={form.progressTotal} onChange={e => set('progressTotal', e.target.value)} />
+            </div>
+            <div>
+              <label className="input-label">{t('form.unit')}</label>
+              <input className="input" placeholder={t('form.unitPlaceholder')}
+                value={form.progressUnit} onChange={e => set('progressUnit', e.target.value)} />
+            </div>
+          </div>
+        )}
+
+        {/* Subtasks */}
+        {form.progressType === 'subtasks' && (
+          <div>
+            <label className="input-label">{t('progressType.subtasks')}</label>
+            <div className="subtask-list">
+              {form.subTasks.map(st => (
+                <div key={st.id} className="subtask-row">
+                  <input className="input" placeholder={t('form.subtaskPlaceholder')}
+                    value={st.title} onChange={e => updateSubtask(st.id, e.target.value)} />
+                  <button className="btn btn-ghost btn-icon btn-sm" onClick={() => removeSubtask(st.id)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+              <button className="btn btn-outline btn-sm" style={{ alignSelf: 'flex-start' }} onClick={addSubtask}>
+                {t('form.addSubtask')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
