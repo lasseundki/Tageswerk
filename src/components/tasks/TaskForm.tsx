@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Task, Category, Project, Priority, TaskMode, TaskLocation, ProgressType } from '../../types';
+import type { Task, Category, Project, Priority, Urgency, TaskMode, TaskLocation, ProgressType } from '../../types';
 import { generateId } from '../../utils/storage';
 import Modal from '../ui/Modal';
 
@@ -10,6 +10,7 @@ interface FormData {
   categoryId: string;
   projectId: string;
   priority: Priority;
+  urgency: Urgency;
   mode: TaskMode;
   location: TaskLocation;
   dueDate: string;
@@ -31,6 +32,7 @@ function taskToForm(task: Task): FormData {
     categoryId: task.categoryId,
     projectId: task.projectId ?? '',
     priority: task.priority,
+    urgency: task.urgency ?? 'someday',
     mode: task.mode,
     location: task.location,
     dueDate: task.dueDate ?? '',
@@ -56,7 +58,8 @@ interface Props {
   projects: Project[];
 }
 
-const PRIORITY_OPTS: Priority[] = ['p1', 'p2', 'p3', 'p4'];
+const PRIORITY_OPTS: Priority[] = ['high', 'medium', 'low'];
+const URGENCY_OPTS: Urgency[] = ['today', 'week', 'month', 'someday'];
 const DAY_INDICES = [1, 2, 3, 4, 5, 6, 0];
 
 export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, categories, projects }: Props) {
@@ -65,7 +68,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
   const [form, setForm] = useState<FormData>(() =>
     task ? taskToForm(task) : {
       title: '', description: '', categoryId: categories[0]?.id ?? '',
-      projectId: '', priority: 'p4', mode: 'digital', location: 'anywhere',
+      projectId: '', priority: 'low', urgency: 'someday', mode: 'digital', location: 'anywhere',
       dueDate: '', estimatedMinutes: '', isRecurring: false,
       recurringType: 'daily', recurringInterval: '1', recurringDaysOfWeek: [],
       progressType: 'checkbox', progressTotal: '', progressUnit: '', subTasks: [],
@@ -85,6 +88,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
       categoryId: form.categoryId,
       projectId: form.projectId || undefined,
       priority: form.priority,
+      urgency: form.urgency,
       mode: form.mode,
       location: form.mode === 'digital' ? 'anywhere' : form.location,
       dueDate: form.dueDate || undefined,
@@ -181,17 +185,37 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
           </div>
         </div>
 
-        {/* Priority */}
+        {/* Priority (Wichtigkeit) */}
         <div>
           <label className="input-label">{t('form.priority')}</label>
-          <div className="mode-toggle">
+          <div className="priority-buttons">
             {PRIORITY_OPTS.map(p => (
-              <button key={p} className={`mode-toggle-btn${form.priority === p ? ' active' : ''}`}
+              <button key={p}
+                className={`priority-btn${form.priority === p ? ` active-${p}` : ''}`}
                 onClick={() => set('priority', p)}>
                 {t(`priority.${p}`)}
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Urgency (Dringlichkeit) — hidden when dueDate set */}
+        <div>
+          <label className="input-label">{t('form.urgency')}</label>
+          {form.dueDate ? (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', margin: 0 }}>
+              {t('form.urgencyAuto')}
+            </p>
+          ) : (
+            <div className="mode-toggle">
+              {URGENCY_OPTS.map(u => (
+                <button key={u} className={`mode-toggle-btn${form.urgency === u ? ' active' : ''}`}
+                  onClick={() => set('urgency', u)}>
+                  {t(`urgency.${u}`)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <hr className="form-divider" />

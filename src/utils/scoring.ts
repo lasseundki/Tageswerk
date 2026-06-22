@@ -1,5 +1,5 @@
 import type { Task, ActiveContext } from '../types';
-import { isOverdue, isToday, isTomorrow, isThisWeek, daysSince } from './dateHelpers';
+import { isOverdue, isToday, isTomorrow, isThisWeek, daysSince, effectiveUrgency } from './dateHelpers';
 
 export interface ScoredTask {
   task: Task;
@@ -7,7 +7,7 @@ export interface ScoredTask {
   reasons: string[];
 }
 
-const PRIORITY_SCORES: Record<string, number> = { p1: 40, p2: 30, p3: 15, p4: 5 };
+const PRIORITY_SCORES: Record<string, number> = { high: 40, medium: 25, low: 8 };
 
 export function scoreTasks(
   tasks: Task[],
@@ -21,21 +21,22 @@ export function scoreTasks(
       let score = 0;
       const reasons: string[] = [];
 
-      // Priority
-      score += PRIORITY_SCORES[task.priority] ?? 5;
+      // Importance (priority)
+      score += PRIORITY_SCORES[task.priority] ?? 8;
       reasons.push(`priority_${task.priority}`);
 
-      // Deadline
+      // Urgency (effective)
+      const urg = effectiveUrgency(task);
+      if (urg === 'today') { score += 50; reasons.push('urgency_today'); }
+      else if (urg === 'week') { score += 20; reasons.push('urgency_week'); }
+      else if (urg === 'month') { score += 8; }
+
+      // Deadline (additive bonus on top of urgency if explicit date)
       if (task.dueDate) {
-        if (isOverdue(task.dueDate)) {
-          score += 50; reasons.push('due_overdue');
-        } else if (isToday(task.dueDate)) {
-          score += 40; reasons.push('due_today');
-        } else if (isTomorrow(task.dueDate)) {
-          score += 25; reasons.push('due_tomorrow');
-        } else if (isThisWeek(task.dueDate)) {
-          score += 10; reasons.push('due_week');
-        }
+        if (isOverdue(task.dueDate)) reasons.push('due_overdue');
+        else if (isToday(task.dueDate)) reasons.push('due_today');
+        else if (isTomorrow(task.dueDate)) reasons.push('due_tomorrow');
+        else if (isThisWeek(task.dueDate)) reasons.push('due_week');
       }
 
       // Effort
@@ -74,13 +75,7 @@ export function scoreTasks(
 }
 
 export function formatReasons(reasons: string[], t: (k: string) => string): string {
-  const topReasons = reasons
-    .filter(r => !r.startsWith('priority_'))
-    .slice(0, 2);
-  const priority = reasons.find(r => r.startsWith('priority_'));
-  const all = [
-    priority ? t(`reasons.${priority}`) : null,
-    ...topReasons.map(r => t(`reasons.${r}`)),
-  ].filter(Boolean);
-  return all.join(' · ');
+  const skip = (r: string) => r.startsWith('priority_');
+  const topReasons = reasons.filter(r => !skip(r)).slice(0, 2);
+  return topReasons.map(r => t(`reasons.${r}`)).filter(Boolean).join(' · ');
 }

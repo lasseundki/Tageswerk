@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Task, Category, Project } from '../../types';
-import { formatDate, formatRelative, isOverdue, isToday } from '../../utils/dateHelpers';
+import { formatDate, formatRelative, isOverdue, isToday, effectiveUrgency } from '../../utils/dateHelpers';
 import Modal from '../ui/Modal';
 import TaskForm from './TaskForm';
 
@@ -84,6 +84,15 @@ export default function TaskDetail({
 
           {/* Details grid */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <div className="detail-row">
+              <span className="detail-label">{t('form.urgency')}</span>
+              <span className="detail-value">
+                {task.dueDate
+                  ? <><span className={`badge badge-urgency-${effectiveUrgency(task)}`}>{t(`urgency.${effectiveUrgency(task)}`)}</span> <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>{t('form.urgencyAuto')}</span></>
+                  : <span className={`badge badge-urgency-${effectiveUrgency(task)}`}>{t(`urgency.${effectiveUrgency(task)}`)}</span>
+                }
+              </span>
+            </div>
             {category && (
               <div className="detail-row">
                 <span className="detail-label">{t('form.category')}</span>

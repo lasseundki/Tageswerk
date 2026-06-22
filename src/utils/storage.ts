@@ -1,4 +1,4 @@
-import type { AppState, DayLog, ProgressEntry } from '../types';
+import type { AppState, DayLog, ProgressEntry, Priority, Urgency } from '../types';
 import { defaultCategories } from '../data/defaultCategories';
 
 const STORAGE_KEY = 'tageswerk_v1';
@@ -12,17 +12,48 @@ const defaultState: AppState = {
   settings: { theme: 'light', language: 'de' },
 };
 
+function migratePriority(p: string): Priority {
+  if (p === 'p1') return 'high';
+  if (p === 'p2') return 'medium';
+  return 'low';
+}
+
+function migrateState(parsed: Record<string, unknown>): AppState {
+  const tasks = ((parsed.tasks as unknown[]) ?? []).map((t: unknown) => {
+    const task = t as Record<string, unknown>;
+    const priority = task.priority as string;
+    const needsMigration = priority === 'p1' || priority === 'p2' || priority === 'p3' || priority === 'p4';
+    return {
+      ...task,
+      priority: needsMigration ? migratePriority(priority) : (priority as Priority),
+      urgency: (task.urgency as Urgency | undefined) ?? 'someday',
+    };
+  });
+
+  const dayLogs = ((parsed.dayLogs as unknown[]) ?? []).map((l: unknown) => {
+    const log = l as Record<string, unknown>;
+    return {
+      ...log,
+      journalEntries: (log.journalEntries as unknown[]) ?? [],
+    };
+  });
+
+  return {
+    ...defaultState,
+    ...(parsed as Partial<AppState>),
+    tasks: tasks as AppState['tasks'],
+    dayLogs: dayLogs as AppState['dayLogs'],
+    settings: { ...defaultState.settings, ...((parsed.settings as object) ?? {}) },
+    activeContext: {},
+  };
+}
+
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState;
-    const parsed = JSON.parse(raw) as Partial<AppState>;
-    return {
-      ...defaultState,
-      ...parsed,
-      settings: { ...defaultState.settings, ...(parsed.settings ?? {}) },
-      activeContext: {},
-    };
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return migrateState(parsed);
   } catch {
     return defaultState;
   }
@@ -42,7 +73,7 @@ export function generateId(): string {
 
 export function ensureDayLog(dayLogs: DayLog[], date: string): DayLog[] {
   if (dayLogs.some(l => l.date === date)) return dayLogs;
-  return [...dayLogs, { date, completedTaskIds: [], progressEntries: [] }];
+  return [...dayLogs, { date, journalEntries: [], completedTaskIds: [], progressEntries: [] }];
 }
 
 export function addCompletedToLog(dayLogs: DayLog[], date: string, taskId: string): DayLog[] {

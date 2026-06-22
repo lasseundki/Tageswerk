@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { AppState, Task, Project, Category, ActiveContext, ProgressEntry } from '../types';
+import type { AppState, Task, Project, Category, ActiveContext, ProgressEntry, JournalEntry } from '../types';
 import {
   loadState, saveState, generateId,
   addCompletedToLog, addProgressEntry,
@@ -174,8 +174,54 @@ export function useAppState() {
       if (exists) {
         return { ...prev, dayLogs: prev.dayLogs.map(l => l.date === date ? { ...l, note } : l) };
       }
-      return { ...prev, dayLogs: [...prev.dayLogs, { date, note, completedTaskIds: [], progressEntries: [] }] };
+      return { ...prev, dayLogs: [...prev.dayLogs, { date, note, journalEntries: [], completedTaskIds: [], progressEntries: [] }] };
     });
+  }, []);
+
+  const addJournalEntry = useCallback((date: string, text: string) => {
+    const entry: JournalEntry = { id: generateId(), text, createdAt: new Date().toISOString() };
+    setState(prev => {
+      const exists = prev.dayLogs.some(l => l.date === date);
+      if (exists) {
+        return {
+          ...prev,
+          dayLogs: prev.dayLogs.map(l =>
+            l.date === date ? { ...l, journalEntries: [...(l.journalEntries ?? []), entry] } : l
+          ),
+        };
+      }
+      return {
+        ...prev,
+        dayLogs: [...prev.dayLogs, { date, journalEntries: [entry], completedTaskIds: [], progressEntries: [] }],
+      };
+    });
+  }, []);
+
+  const updateJournalEntry = useCallback((date: string, entryId: string, text: string) => {
+    setState(prev => ({
+      ...prev,
+      dayLogs: prev.dayLogs.map(l =>
+        l.date === date
+          ? {
+              ...l,
+              journalEntries: (l.journalEntries ?? []).map(e =>
+                e.id === entryId ? { ...e, text, updatedAt: new Date().toISOString() } : e
+              ),
+            }
+          : l
+      ),
+    }));
+  }, []);
+
+  const deleteJournalEntry = useCallback((date: string, entryId: string) => {
+    setState(prev => ({
+      ...prev,
+      dayLogs: prev.dayLogs.map(l =>
+        l.date === date
+          ? { ...l, journalEntries: (l.journalEntries ?? []).filter(e => e.id !== entryId) }
+          : l
+      ),
+    }));
   }, []);
 
   // ── Context / settings ─────────────────────────────────────────
@@ -227,7 +273,8 @@ export function useAppState() {
     incrementCounter, decrementCounter, toggleSubtask,
     addProject, updateProject, deleteProject,
     addCategory, updateCategory, deleteCategory,
-    updateDayNote, setActiveContext, updateSettings,
+    updateDayNote, addJournalEntry, updateJournalEntry, deleteJournalEntry,
+    setActiveContext, updateSettings,
     exportData, importData, resetCompletedRecurring,
   };
 }

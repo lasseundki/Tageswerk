@@ -1,4 +1,5 @@
-export type Priority = 'p1' | 'p2' | 'p3' | 'p4';
+export type Priority = 'high' | 'medium' | 'low';
+export type Urgency = 'today' | 'week' | 'month' | 'someday';
 export type TaskMode = 'digital' | 'analog';
 export type TaskLocation = 'anywhere' | 'home' | 'outside';
 export type ProgressType = 'checkbox' | 'counter' | 'subtasks';
@@ -37,6 +38,7 @@ export interface Task {
   categoryId: string;
   projectId?: string;
   priority: Priority;
+  urgency: Urgency;
   mode: TaskMode;
   location: TaskLocation;
   dueDate?: string;
@@ -68,9 +70,17 @@ export interface ProgressEntry {
   timestamp: string;
 }
 
+export interface JournalEntry {
+  id: string;
+  text: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface DayLog {
   date: string;
   note?: string;
+  journalEntries: JournalEntry[];
   completedTaskIds: string[];
   progressEntries: ProgressEntry[];
 }

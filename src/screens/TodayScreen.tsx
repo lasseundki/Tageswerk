@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppStateContext } from '../hooks/useAppState';
 import { useFocusSuggestion } from '../hooks/useFocusSuggestion';
-import { today } from '../utils/dateHelpers';
+import { today, timeProgress } from '../utils/dateHelpers';
 import FocusSuggestion from '../components/today/FocusSuggestion';
 import ContextSelector from '../components/today/ContextSelector';
 import TaskCard from '../components/tasks/TaskCard';
@@ -48,6 +48,29 @@ export default function TodayScreen({ ctx }: Props) {
           + {t('task.add')}
         </button>
       </div>
+
+      {/* Time progress */}
+      {(() => {
+        const prog = timeProgress();
+        const rows: Array<{ key: 'year' | 'month' | 'week'; label: string; pct: number }> = [
+          { key: 'year', label: t('timeProgress.year'), pct: prog.year },
+          { key: 'month', label: t('timeProgress.month'), pct: prog.month },
+          { key: 'week', label: t('timeProgress.week'), pct: prog.week },
+        ];
+        return (
+          <div className="time-progress">
+            {rows.map(({ key, label, pct }) => (
+              <div key={key} className="time-progress-row">
+                <span className="time-progress-label">{label}</span>
+                <div className="time-progress-bar-wrap">
+                  <div className="time-progress-bar" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="time-progress-pct">{pct}%</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Context selector */}
       <ContextSelector context={state.activeContext} onChange={setActiveContext} />
