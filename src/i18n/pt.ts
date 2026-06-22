@@ -44,6 +44,7 @@ export default {
     addSubtask: '+ Subtarefa', subtaskPlaceholder: 'Subtarefa…',
     confirmDelete: 'Excluir este item?',
     urgencyAuto: 'Auto (da data limite)',
+    address: 'Endereço', addressPlaceholder: 'Rua, Cidade…',
   },
   priority: { high: 'Alta', medium: 'Média', low: 'Baixa' },
   urgency: { today: 'Hoje', week: 'Esta semana', month: 'Este mês', someday: 'Algum dia' },

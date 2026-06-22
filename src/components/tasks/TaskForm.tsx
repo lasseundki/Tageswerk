@@ -14,6 +14,7 @@ interface FormData {
   mode: TaskMode;
   location: TaskLocation;
   dueDate: string;
+  address: string;
   estimatedMinutes: string;
   isRecurring: boolean;
   recurringType: 'daily' | 'weekly' | 'monthly';
@@ -36,6 +37,7 @@ function taskToForm(task: Task): FormData {
     mode: task.mode,
     location: task.location,
     dueDate: task.dueDate ?? '',
+    address: task.address ?? '',
     estimatedMinutes: task.estimatedMinutes?.toString() ?? '',
     isRecurring: task.isRecurring,
     recurringType: task.recurringPattern?.type ?? 'daily',
@@ -69,7 +71,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
     task ? taskToForm(task) : {
       title: '', description: '', categoryId: categories[0]?.id ?? '',
       projectId: '', priority: 'low', urgency: 'someday', mode: 'digital', location: 'anywhere',
-      dueDate: '', estimatedMinutes: '', isRecurring: false,
+      dueDate: '', address: '', estimatedMinutes: '', isRecurring: false,
       recurringType: 'daily', recurringInterval: '1', recurringDaysOfWeek: [],
       progressType: 'checkbox', progressTotal: '', progressUnit: '', subTasks: [],
     }
@@ -78,7 +80,15 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
   const set = <K extends keyof FormData>(key: K, val: FormData[K]) =>
     setForm(prev => ({ ...prev, [key]: val }));
 
-  const filteredProjects = projects.filter(p => !p.isArchived && p.categoryId === form.categoryId);
+  const filteredProjects = projects.filter(p => !p.isArchived);
+
+  const handleProjectChange = (projectId: string) => {
+    set('projectId', projectId);
+    if (projectId) {
+      const project = projects.find(p => p.id === projectId);
+      if (project) set('categoryId', project.categoryId);
+    }
+  };
 
   const handleSave = () => {
     if (!form.title.trim()) return;
@@ -92,6 +102,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
       mode: form.mode,
       location: form.mode === 'digital' ? 'anywhere' : form.location,
       dueDate: form.dueDate || undefined,
+      address: (form.mode === 'analog' && form.location === 'outside' && form.address.trim()) ? form.address.trim() : undefined,
       estimatedMinutes: form.estimatedMinutes ? parseInt(form.estimatedMinutes) : undefined,
       isRecurring: form.isRecurring,
       recurringPattern: form.isRecurring ? {
@@ -167,22 +178,25 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
 
         <hr className="form-divider" />
 
-        {/* Category + Project */}
-        <div className="input-row">
-          <div>
-            <label className="input-label">{t('form.category')}</label>
-            <select className="input" value={form.categoryId}
-              onChange={e => { set('categoryId', e.target.value); set('projectId', ''); }}>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="input-label">{t('form.project')}</label>
-            <select className="input" value={form.projectId} onChange={e => set('projectId', e.target.value)}>
-              <option value="">{t('common.noProject')}</option>
-              {filteredProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
+        {/* Project (primary) */}
+        <div>
+          <label className="input-label">{t('form.project')}</label>
+          <select className="input" value={form.projectId} onChange={e => handleProjectChange(e.target.value)}>
+            <option value="">{t('common.noProject')}</option>
+            {filteredProjects.map(p => {
+              const cat = categories.find(c => c.id === p.categoryId);
+              return <option key={p.id} value={p.id}>{cat ? `${cat.icon} ` : ''}{p.name}</option>;
+            })}
+          </select>
+        </div>
+
+        {/* Category (auto-filled from project, can override) */}
+        <div>
+          <label className="input-label">{t('form.category')}</label>
+          <select className="input" value={form.categoryId}
+            onChange={e => set('categoryId', e.target.value)}>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+          </select>
         </div>
 
         {/* Priority (Wichtigkeit) */}
@@ -237,17 +251,26 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
 
         {/* Location (analog only) */}
         {form.mode === 'analog' && (
-          <div>
-            <label className="input-label">{t('form.location')}</label>
-            <div className="mode-toggle">
-              {(['anywhere', 'home', 'outside'] as TaskLocation[]).map(loc => (
-                <button key={loc} className={`mode-toggle-btn${form.location === loc ? ' active' : ''}`}
-                  onClick={() => set('location', loc)}>
-                  {loc === 'anywhere' ? '🌐' : loc === 'home' ? '🏠' : '🗺️'} {t(`location.${loc}`)}
-                </button>
-              ))}
+          <>
+            <div>
+              <label className="input-label">{t('form.location')}</label>
+              <div className="mode-toggle">
+                {(['anywhere', 'home', 'outside'] as TaskLocation[]).map(loc => (
+                  <button key={loc} className={`mode-toggle-btn${form.location === loc ? ' active' : ''}`}
+                    onClick={() => set('location', loc)}>
+                    {loc === 'anywhere' ? '🌐' : loc === 'home' ? '🏠' : '🗺️'} {t(`location.${loc}`)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+            {form.location === 'outside' && (
+              <div>
+                <label className="input-label">🗺️ {t('form.address')}</label>
+                <input className="input" placeholder={t('form.addressPlaceholder')}
+                  value={form.address} onChange={e => set('address', e.target.value)} />
+              </div>
+            )}
+          </>
         )}
 
         <hr className="form-divider" />

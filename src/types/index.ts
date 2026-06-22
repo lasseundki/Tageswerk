@@ -42,6 +42,7 @@ export interface Task {
   mode: TaskMode;
   location: TaskLocation;
   dueDate?: string;
+  address?: string;
   estimatedMinutes?: number;
   isRecurring: boolean;
   recurringPattern?: {

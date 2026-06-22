@@ -116,6 +116,21 @@ export default function TaskDetail({
                 </span>
               </div>
             )}
+            {task.address && (
+              <div className="detail-row">
+                <span className="detail-label">{t('form.address')}</span>
+                <span className="detail-value">
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(task.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--color-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    🗺️ {task.address}
+                  </a>
+                </span>
+              </div>
+            )}
             {task.estimatedMinutes && (
               <div className="detail-row">
                 <span className="detail-label">{t('form.estimatedMinutes')}</span>

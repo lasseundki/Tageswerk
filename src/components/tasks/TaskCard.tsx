@@ -75,6 +75,9 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
               {formatRelative(task.dueDate, t)}
             </span>
           )}
+          {task.address && (
+            <span className="task-card-due" title={task.address}>🗺️ {task.address}</span>
+          )}
           {task.estimatedMinutes && (
             <span className="task-card-effort">
               ⏱ {task.estimatedMinutes}min

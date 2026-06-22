@@ -44,6 +44,7 @@ export default {
     addSubtask: '+ Subtask', subtaskPlaceholder: 'Subtask…',
     confirmDelete: 'Delete this item?',
     urgencyAuto: 'Auto (from due date)',
+    address: 'Address', addressPlaceholder: 'Street, City…',
   },
   priority: { high: 'High', medium: 'Medium', low: 'Low' },
   urgency: { today: 'Today', week: 'This week', month: 'This month', someday: 'Someday' },

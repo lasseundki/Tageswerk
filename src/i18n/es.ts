@@ -44,6 +44,7 @@ export default {
     addSubtask: '+ Subtarea', subtaskPlaceholder: 'Subtarea…',
     confirmDelete: '¿Eliminar este elemento?',
     urgencyAuto: 'Auto (desde fecha límite)',
+    address: 'Dirección', addressPlaceholder: 'Calle, Ciudad…',
   },
   priority: { high: 'Alta', medium: 'Media', low: 'Baja' },
   urgency: { today: 'Hoy', week: 'Esta semana', month: 'Este mes', someday: 'Algún día' },

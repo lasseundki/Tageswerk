@@ -61,6 +61,7 @@ export default {
     addSubtask: '+ Unteraufgabe', subtaskPlaceholder: 'Unteraufgabe…',
     confirmDelete: 'Wirklich löschen?',
     urgencyAuto: 'Automatisch (aus Datum)',
+    address: 'Adresse', addressPlaceholder: 'Straße, Stadt…',
   },
   priority: { high: 'Hoch', medium: 'Mittel', low: 'Niedrig' },
   urgency: { today: 'Heute', week: 'Diese Woche', month: 'Dieser Monat', someday: 'Irgendwann' },
