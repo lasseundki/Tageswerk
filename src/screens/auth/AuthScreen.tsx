@@ -3,18 +3,69 @@ import { useAuth } from '../../contexts/AuthContext';
 
 type Mode = 'login' | 'register' | 'reset';
 
+interface AuthError {
+  message: string;
+  action?: { label: string; mode: Mode };
+}
+
+function parseError(code: string, mode: Mode): AuthError {
+  switch (code) {
+    case 'auth/user-not-found':
+      return {
+        message: 'Kein Konto mit dieser E-Mail-Adresse.',
+        action: { label: 'Jetzt registrieren', mode: 'register' },
+      };
+    case 'auth/wrong-password':
+      return {
+        message: 'Falsches Passwort.',
+        action: { label: 'Passwort vergessen?', mode: 'reset' },
+      };
+    case 'auth/invalid-credential':
+      // Firebase returns this for both wrong password and non-existent user
+      return mode === 'login'
+        ? {
+            message: 'E-Mail oder Passwort falsch.',
+            action: { label: 'Noch kein Konto? Registrieren', mode: 'register' },
+          }
+        : { message: 'Ungültige Anmeldedaten.' };
+    case 'auth/email-already-in-use':
+      return {
+        message: 'Diese E-Mail ist bereits registriert.',
+        action: { label: 'Stattdessen anmelden', mode: 'login' },
+      };
+    case 'auth/account-exists-with-different-credential':
+      return {
+        message: 'Ein Konto mit dieser E-Mail existiert bereits über eine andere Anmeldemethode.',
+        action: { label: 'Mit E-Mail anmelden', mode: 'login' },
+      };
+    case 'auth/weak-password':
+      return { message: 'Passwort muss mindestens 6 Zeichen haben.' };
+    case 'auth/invalid-email':
+      return { message: 'Ungültige E-Mail-Adresse.' };
+    case 'auth/too-many-requests':
+      return {
+        message: 'Zu viele Versuche. Bitte warte kurz oder setze dein Passwort zurück.',
+        action: { label: 'Passwort zurücksetzen', mode: 'reset' },
+      };
+    default:
+      return { message: `Fehler (${code || 'unbekannt'}). Bitte versuche es erneut.` };
+  }
+}
+
 export default function AuthScreen() {
   const { signIn, signUp, resetPassword } = useAuth();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [authError, setAuthError] = useState<AuthError | null>(null);
   const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
 
+  const switchMode = (m: Mode) => { setMode(m); setAuthError(null); setInfo(''); };
+
   const handle = async (e: FormEvent) => {
     e.preventDefault();
-    setError(''); setInfo('');
+    setAuthError(null); setInfo('');
     setBusy(true);
     try {
       if (mode === 'login') await signIn(email, password);
@@ -26,14 +77,7 @@ export default function AuthScreen() {
       }
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? '';
-      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential')
-        setError('E-Mail oder Passwort falsch.');
-      else if (code === 'auth/email-already-in-use')
-        setError('Diese E-Mail ist bereits registriert.');
-      else if (code === 'auth/weak-password')
-        setError('Passwort muss mindestens 6 Zeichen haben.');
-      else
-        setError('Fehler: ' + code);
+      setAuthError(parseError(code, mode));
     } finally {
       setBusy(false);
     }
@@ -71,7 +115,20 @@ export default function AuthScreen() {
             </div>
           )}
 
-          {error && <p className="auth-error">{error}</p>}
+          {authError && (
+            <div className="auth-error">
+              <span>{authError.message}</span>
+              {authError.action && (
+                <button
+                  type="button"
+                  className="auth-error-action"
+                  onClick={() => switchMode(authError.action!.mode)}
+                >
+                  {authError.action.label} →
+                </button>
+              )}
+            </div>
+          )}
           {info && <p className="auth-info">{info}</p>}
 
           <button className="btn btn-primary btn-lg" type="submit" disabled={busy} style={{ width: '100%' }}>
@@ -82,16 +139,16 @@ export default function AuthScreen() {
         <div className="auth-links">
           {mode === 'login' && (
             <>
-              <button className="btn btn-ghost btn-sm" onClick={() => { setMode('register'); setError(''); }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => switchMode('register')}>
                 Noch kein Konto? Registrieren
               </button>
-              <button className="btn btn-ghost btn-sm" onClick={() => { setMode('reset'); setError(''); }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => switchMode('reset')}>
                 Passwort vergessen
               </button>
             </>
           )}
           {mode !== 'login' && (
-            <button className="btn btn-ghost btn-sm" onClick={() => { setMode('login'); setError(''); }}>
+            <button className="btn btn-ghost btn-sm" onClick={() => switchMode('login')}>
               ← Zurück zur Anmeldung
             </button>
           )}
