@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppStateContext } from '../hooks/useFirestoreState';
 import { useFocusSuggestion } from '../hooks/useFocusSuggestion';
@@ -12,6 +12,35 @@ import TaskCard from '../components/tasks/TaskCard';
 import TaskDetail from '../components/tasks/TaskDetail';
 import TaskForm from '../components/tasks/TaskForm';
 
+type ClockMode = 'hidden' | 'time' | 'countdown';
+
+function getClockMode(): ClockMode {
+  return (localStorage.getItem('tageswerk_clock_mode') as ClockMode) ?? 'hidden';
+}
+
+function formatCountdown(now: Date): string {
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const ms = midnight.getTime() - now.getTime();
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function countdownColor(now: Date): string {
+  return now.getHours() >= 18 ? '#DC2626' : '#F59E0B';
+}
+
+function useClockTick() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
+
 interface Props {
   ctx: AppStateContext;
 }
@@ -21,6 +50,17 @@ export default function TodayScreen({ ctx }: Props) {
   const { state, addTask, updateTask, completeTask, reopenTask, deleteTask, markStarted,
     incrementCounter, decrementCounter, toggleSubtask, setActiveContext, updateDayNote,
     toggleHabitDone, setHabitCount } = ctx;
+
+  const [clockMode, setClockMode] = useState<ClockMode>(getClockMode);
+  const now = useClockTick();
+
+  const cycleClockMode = useCallback(() => {
+    setClockMode(prev => {
+      const next: ClockMode = prev === 'hidden' ? 'time' : prev === 'time' ? 'countdown' : 'hidden';
+      localStorage.setItem('tageswerk_clock_mode', next);
+      return next;
+    });
+  }, []);
 
   const TIME_ORDER: HabitTimeOfDay[] = ['morning', 'afternoon', 'evening', 'anytime'];
   const todayHabits = getTodayHabits(state.habits, today());
@@ -53,7 +93,23 @@ export default function TodayScreen({ ctx }: Props) {
   return (
     <div className="screen">
       <div className="screen-header">
-        <h1 className="screen-title">{t('nav.today')}</h1>
+        <div className="today-title-row">
+          <h1 className="screen-title">{t('nav.today')}</h1>
+          <button
+            className="clock-chip"
+            onClick={cycleClockMode}
+            title="Klicken zum Wechseln"
+            style={clockMode === 'countdown' ? { color: countdownColor(now) } : undefined}
+          >
+            {clockMode === 'hidden' && (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+            )}
+            {clockMode === 'time' && now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+            {clockMode === 'countdown' && formatCountdown(now)}
+          </button>
+        </div>
         <button className="btn btn-outline btn-sm" onClick={() => setAddingTask(true)}>
           + {t('task.add')}
         </button>

@@ -151,6 +151,19 @@ input, select, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: var(--space-6);
 }
+.today-title-row {
+  display: flex; align-items: baseline; gap: var(--space-3);
+}
+.clock-chip {
+  background: none; border: none; cursor: pointer; padding: 2px 4px;
+  font-family: var(--font-heading); font-size: var(--text-lg); font-weight: 600;
+  color: var(--color-text); line-height: 1;
+  border-radius: var(--radius-sm); transition: opacity var(--transition-fast);
+  display: flex; align-items: center;
+}
+.clock-chip:hover { opacity: 0.7; }
+/* hidden mode: faint clock icon */
+.clock-chip svg { color: var(--color-text-muted); opacity: 0.45; }
 .screen-title { font-family: var(--font-heading); font-size: var(--text-2xl); font-weight: 600; }
 .section-label {
   font-size: var(--text-xs); font-weight: var(--font-semibold);
