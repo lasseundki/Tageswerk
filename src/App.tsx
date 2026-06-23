@@ -6,6 +6,7 @@ import Navigation from './components/layout/Navigation';
 import TodayScreen from './screens/TodayScreen';
 import TasksScreen from './screens/TasksScreen';
 import ProjectsScreen from './screens/ProjectsScreen';
+import HabitsScreen from './screens/HabitsScreen';
 import ReviewScreen from './screens/ReviewScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import TaskForm from './components/tasks/TaskForm';
@@ -34,6 +35,7 @@ export default function App() {
       case 'today':    return <TodayScreen ctx={appState} />;
       case 'tasks':    return <TasksScreen ctx={appState} />;
       case 'projects': return <ProjectsScreen ctx={appState} />;
+      case 'habits':   return <HabitsScreen ctx={appState} />;
       case 'review':   return <ReviewScreen ctx={appState} />;
       case 'settings': return <SettingsScreen ctx={appState} />;
     }

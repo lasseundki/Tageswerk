@@ -1,4 +1,4 @@
-import type { AppState, DayLog, ProgressEntry, Priority, Urgency } from '../types';
+import type { AppState, DayLog, ProgressEntry, Priority, Urgency, HabitLog } from '../types';
 import { defaultCategories } from '../data/defaultCategories';
 
 const STORAGE_KEY = 'tageswerk_v1';
@@ -8,6 +8,8 @@ const defaultState: AppState = {
   projects: [],
   tasks: [],
   dayLogs: [],
+  habits: [],
+  habitLogs: [],
   activeContext: {},
   settings: { theme: 'light', language: 'de' },
 };
@@ -38,11 +40,23 @@ function migrateState(parsed: Record<string, unknown>): AppState {
     };
   });
 
+  const habitLogs = ((parsed.habitLogs as unknown[]) ?? []).map((l: unknown) => {
+    const log = l as Record<string, unknown>;
+    return {
+      date: log.date as string,
+      habitId: log.habitId as string,
+      done: (log.done as boolean) ?? false,
+      count: (log.count as number) ?? 0,
+    } as HabitLog;
+  });
+
   return {
     ...defaultState,
     ...(parsed as Partial<AppState>),
     tasks: tasks as AppState['tasks'],
     dayLogs: dayLogs as AppState['dayLogs'],
+    habits: (parsed.habits as AppState['habits']) ?? [],
+    habitLogs,
     settings: { ...defaultState.settings, ...((parsed.settings as object) ?? {}) },
     activeContext: {},
   };

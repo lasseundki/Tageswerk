@@ -5,7 +5,7 @@ export default {
   },
   nav: {
     today: 'Hoje', tasks: 'Tarefas', projects: 'Projetos',
-    review: 'Revisão', settings: 'Configurações',
+    habits: 'Hábitos', review: 'Revisão', settings: 'Configurações',
   },
   today: {
     todayTasks: 'Tarefas de hoje',
@@ -74,6 +74,20 @@ export default {
     addEntry: 'Adicionar entrada', noEntries: 'Nenhuma entrada no diário',
   },
   timeProgress: { year: 'Ano', month: 'Mês', week: 'Semana' },
+  habits: {
+    title: 'Hábitos', add: 'Adicionar hábito', edit: 'Editar hábito',
+    noHabits: 'Sem hábitos. Adicione o primeiro!',
+    todaySection: 'Hábitos', streak: 'Sequência', days: 'dias',
+    lastWeek: '7 dias', lastMonth: '30 dias', completionRate: 'Taxa de conclusão',
+    morning: 'Manhã', afternoon: 'Tarde', evening: 'Noite', anytime: 'Qualquer hora',
+    timeOfDay: 'Momento do dia', frequency: 'Frequência',
+    daily: 'Diário', weekdays: 'Dias úteis (Seg–Sex)', weekends: 'Fim de semana', custom: 'Personalizado',
+    type: 'Tipo', boolean: 'Caixa', count: 'Contador',
+    targetCount: 'Meta', unit: 'Unidade', unitPlaceholder: 'ex: copos',
+    icon: 'Ícone', color: 'Cor',
+    archive: 'Arquivar', unarchive: 'Desarquivar', delete: 'Excluir',
+    showArchived: 'Mostrar arquivados',
+  },
   settings: {
     language: 'Idioma', theme: 'Tema', theme_light: 'Claro', theme_dark: 'Escuro',
     categories: 'Categorias', data: 'Dados', export: 'Exportar', import: 'Importar',

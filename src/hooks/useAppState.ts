@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { AppState, Task, Project, Category, ActiveContext, ProgressEntry, JournalEntry } from '../types';
+import type { AppState, Task, Project, Category, ActiveContext, ProgressEntry, JournalEntry, Habit, HabitLog } from '../types';
 import {
   loadState, saveState, generateId,
   addCompletedToLog, addProgressEntry,
@@ -233,6 +233,59 @@ export function useAppState() {
     setState(prev => ({ ...prev, settings: { ...prev.settings, ...settings } }));
   }, []);
 
+  // ── Habits ────────────────────────────────────────────────────
+  const addHabit = useCallback((habit: Omit<Habit, 'id' | 'createdAt'>) => {
+    const h: Habit = { ...habit, id: generateId(), createdAt: new Date().toISOString() };
+    setState(prev => ({ ...prev, habits: [...prev.habits, h] }));
+  }, []);
+
+  const updateHabit = useCallback((id: string, changes: Partial<Habit>) => {
+    setState(prev => ({
+      ...prev,
+      habits: prev.habits.map(h => h.id === id ? { ...h, ...changes } : h),
+    }));
+  }, []);
+
+  const deleteHabit = useCallback((id: string) => {
+    setState(prev => ({
+      ...prev,
+      habits: prev.habits.filter(h => h.id !== id),
+      habitLogs: prev.habitLogs.filter(l => l.habitId !== id),
+    }));
+  }, []);
+
+  const toggleHabitDone = useCallback((habitId: string, date: string) => {
+    setState(prev => {
+      const existing = prev.habitLogs.find(l => l.habitId === habitId && l.date === date);
+      if (existing) {
+        return {
+          ...prev,
+          habitLogs: prev.habitLogs.map(l =>
+            l.habitId === habitId && l.date === date ? { ...l, done: !l.done } : l
+          ),
+        };
+      }
+      const newLog: HabitLog = { habitId, date, done: true, count: 0 };
+      return { ...prev, habitLogs: [...prev.habitLogs, newLog] };
+    });
+  }, []);
+
+  const setHabitCount = useCallback((habitId: string, date: string, count: number) => {
+    setState(prev => {
+      const existing = prev.habitLogs.find(l => l.habitId === habitId && l.date === date);
+      if (existing) {
+        return {
+          ...prev,
+          habitLogs: prev.habitLogs.map(l =>
+            l.habitId === habitId && l.date === date ? { ...l, count: Math.max(0, count) } : l
+          ),
+        };
+      }
+      const newLog: HabitLog = { habitId, date, done: false, count: Math.max(0, count) };
+      return { ...prev, habitLogs: [...prev.habitLogs, newLog] };
+    });
+  }, []);
+
   // ── Data export / import ───────────────────────────────────────
   const exportData = useCallback(() => JSON.stringify(state, null, 2), [state]);
 
@@ -274,6 +327,7 @@ export function useAppState() {
     addProject, updateProject, deleteProject,
     addCategory, updateCategory, deleteCategory,
     updateDayNote, addJournalEntry, updateJournalEntry, deleteJournalEntry,
+    addHabit, updateHabit, deleteHabit, toggleHabitDone, setHabitCount,
     setActiveContext, updateSettings,
     exportData, importData, resetCompletedRecurring,
   };

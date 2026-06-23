@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next';
 import type { AppStateContext } from '../hooks/useAppState';
 import { useFocusSuggestion } from '../hooks/useFocusSuggestion';
 import { today, timeProgress } from '../utils/dateHelpers';
+import { getTodayHabits, getHabitLog } from '../utils/habitHelpers';
+import type { HabitTimeOfDay } from '../types';
+import HabitCard from '../components/habits/HabitCard';
 import FocusSuggestion from '../components/today/FocusSuggestion';
 import ContextSelector from '../components/today/ContextSelector';
 import TaskCard from '../components/tasks/TaskCard';
@@ -16,7 +19,14 @@ interface Props {
 export default function TodayScreen({ ctx }: Props) {
   const { t } = useTranslation();
   const { state, addTask, updateTask, completeTask, reopenTask, deleteTask, markStarted,
-    incrementCounter, decrementCounter, toggleSubtask, setActiveContext, updateDayNote } = ctx;
+    incrementCounter, decrementCounter, toggleSubtask, setActiveContext, updateDayNote,
+    toggleHabitDone, setHabitCount } = ctx;
+
+  const TIME_ORDER: HabitTimeOfDay[] = ['morning', 'afternoon', 'evening', 'anytime'];
+  const todayHabits = getTodayHabits(state.habits, today());
+  const habitGroups = TIME_ORDER
+    .map(tod => ({ tod, habits: todayHabits.filter(h => h.timeOfDay === tod) }))
+    .filter(g => g.habits.length > 0);
 
   const { suggestion, skipSuggestion } = useFocusSuggestion(state);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -120,6 +130,35 @@ export default function TodayScreen({ ctx }: Props) {
               />
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Habits */}
+      {habitGroups.length > 0 && (
+        <section style={{ marginBottom: 'var(--space-6)' }}>
+          <h2 className="section-label">{t('habits.todaySection')}</h2>
+          {habitGroups.map(({ tod, habits }) => (
+            <div key={tod} className="habit-time-group">
+              {habitGroups.length > 1 && (
+                <div className="habit-time-label">{t(`habits.${tod}`)}</div>
+              )}
+              <div className="habit-list">
+                {habits.map(habit => {
+                  const log = getHabitLog(state.habitLogs, habit.id, todayStr);
+                  return (
+                    <HabitCard
+                      key={habit.id}
+                      habit={habit}
+                      log={log}
+                      allLogs={state.habitLogs}
+                      onToggle={() => toggleHabitDone(habit.id, todayStr)}
+                      onCount={n => setHabitCount(habit.id, todayStr, n)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </section>
       )}
 

@@ -36,6 +36,15 @@ const items: { key: Screen; label: string; icon: (active: boolean) => React.Reac
     ),
   },
   {
+    key: 'habits',
+    label: 'nav.habits',
+    icon: (a) => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a ? 2.5 : 2}>
+        <path d="M9 12l2 2 4-4"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+      </svg>
+    ),
+  },
+  {
     key: 'review',
     label: 'nav.review',
     icon: (a) => (

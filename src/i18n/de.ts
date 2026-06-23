@@ -5,7 +5,7 @@ export default {
   },
   nav: {
     today: 'Heute', tasks: 'Aufgaben', projects: 'Projekte',
-    review: 'Rückblick', settings: 'Einstellungen',
+    habits: 'Gewohnheiten', review: 'Rückblick', settings: 'Einstellungen',
   },
   today: {
     todayTasks: 'Heutige Aufgaben',
@@ -98,6 +98,20 @@ export default {
   },
   timeProgress: {
     year: 'Jahr', month: 'Monat', week: 'Woche',
+  },
+  habits: {
+    title: 'Gewohnheiten', add: 'Gewohnheit hinzufügen', edit: 'Gewohnheit bearbeiten',
+    noHabits: 'Noch keine Gewohnheiten. Füge deine erste hinzu!',
+    todaySection: 'Gewohnheiten', streak: 'Streak', days: 'Tage',
+    lastWeek: '7 Tage', lastMonth: '30 Tage', completionRate: 'Abschlussrate',
+    morning: 'Morgen', afternoon: 'Nachmittag', evening: 'Abend', anytime: 'Jederzeit',
+    timeOfDay: 'Tageszeit', frequency: 'Häufigkeit',
+    daily: 'Täglich', weekdays: 'Werktags (Mo–Fr)', weekends: 'Wochenende', custom: 'Angepasst',
+    type: 'Art', boolean: 'Abhaken', count: 'Zähler',
+    targetCount: 'Ziel', unit: 'Einheit', unitPlaceholder: 'z.B. Gläser',
+    icon: 'Symbol', color: 'Farbe',
+    archive: 'Archivieren', unarchive: 'Wiederherstellen', delete: 'Löschen',
+    showArchived: 'Archivierte anzeigen',
   },
   settings: {
     language: 'Sprache', theme: 'Design', theme_light: 'Hell', theme_dark: 'Dunkel',

@@ -1,11 +1,37 @@
 export type Priority = 'high' | 'medium' | 'low';
+export type HabitFrequency = 'daily' | 'weekdays' | 'weekends' | 'custom';
+export type HabitTimeOfDay = 'morning' | 'afternoon' | 'evening' | 'anytime';
+export type HabitType = 'boolean' | 'count';
 export type Urgency = 'today' | 'week' | 'month' | 'someday';
 export type TaskMode = 'digital' | 'analog';
 export type TaskLocation = 'anywhere' | 'home' | 'outside';
 export type ProgressType = 'checkbox' | 'counter' | 'subtasks';
 export type Language = 'de' | 'en' | 'es' | 'pt';
 export type Theme = 'light' | 'dark';
-export type Screen = 'today' | 'tasks' | 'projects' | 'review' | 'settings';
+export type Screen = 'today' | 'tasks' | 'projects' | 'habits' | 'review' | 'settings';
+
+export interface Habit {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  timeOfDay: HabitTimeOfDay;
+  frequency: HabitFrequency;
+  daysOfWeek?: number[];
+  type: HabitType;
+  targetCount?: number;
+  unit?: string;
+  order: number;
+  createdAt: string;
+  isArchived: boolean;
+}
+
+export interface HabitLog {
+  date: string;
+  habitId: string;
+  done: boolean;
+  count: number;
+}
 
 export interface Category {
   id: string;
@@ -97,6 +123,8 @@ export interface AppState {
   projects: Project[];
   tasks: Task[];
   dayLogs: DayLog[];
+  habits: Habit[];
+  habitLogs: HabitLog[];
   activeContext: ActiveContext;
   settings: {
     theme: Theme;

@@ -5,7 +5,7 @@ export default {
   },
   nav: {
     today: 'Today', tasks: 'Tasks', projects: 'Projects',
-    review: 'Review', settings: 'Settings',
+    habits: 'Habits', review: 'Review', settings: 'Settings',
   },
   today: {
     todayTasks: "Today's tasks",
@@ -74,6 +74,20 @@ export default {
     addEntry: 'Add entry', noEntries: 'No journal entries yet',
   },
   timeProgress: { year: 'Year', month: 'Month', week: 'Week' },
+  habits: {
+    title: 'Habits', add: 'Add habit', edit: 'Edit habit',
+    noHabits: 'No habits yet. Add your first one!',
+    todaySection: 'Habits', streak: 'Streak', days: 'days',
+    lastWeek: '7 days', lastMonth: '30 days', completionRate: 'Completion rate',
+    morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening', anytime: 'Anytime',
+    timeOfDay: 'Time of day', frequency: 'Frequency',
+    daily: 'Daily', weekdays: 'Weekdays (Mon–Fri)', weekends: 'Weekends', custom: 'Custom',
+    type: 'Type', boolean: 'Checkbox', count: 'Counter',
+    targetCount: 'Target', unit: 'Unit', unitPlaceholder: 'e.g. glasses',
+    icon: 'Icon', color: 'Color',
+    archive: 'Archive', unarchive: 'Unarchive', delete: 'Delete',
+    showArchived: 'Show archived',
+  },
   settings: {
     language: 'Language', theme: 'Theme', theme_light: 'Light', theme_dark: 'Dark',
     categories: 'Categories', data: 'Data', export: 'Export', import: 'Import',
