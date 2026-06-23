@@ -1,6 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AppStateContext } from '../hooks/useAppState';
+import type { AppStateContext } from '../hooks/useFirestoreState';
 import type { Priority, TaskMode, Task } from '../types';
 import { effectiveUrgency } from '../utils/dateHelpers';
 import TaskCard from '../components/tasks/TaskCard';
@@ -137,8 +137,8 @@ export default function TasksScreen({ ctx }: Props) {
 
         <select className="input" style={{ flex: '0 0 auto' }} value={modeFilter} onChange={e => setModeFilter(e.target.value as TaskMode | '')}>
           <option value="">{t('filter.allModes')}</option>
-          <option value="digital">💻 {t('mode.digital')}</option>
-          <option value="analog">🤝 {t('mode.analog')}</option>
+          <option value="digital">ðŸ’» {t('mode.digital')}</option>
+          <option value="analog">ðŸ¤ {t('mode.analog')}</option>
         </select>
       </div>
 
@@ -170,7 +170,7 @@ export default function TasksScreen({ ctx }: Props) {
       {view === 'matrix' && (
         <div>
           <div className="matrix-outer">
-            <div className="matrix-y-label">{t('matrix.important')} ↑</div>
+            <div className="matrix-y-label">{t('matrix.important')} â†‘</div>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span className="matrix-axis-label" style={{ flex: 1 }}>{t('matrix.urgent')}</span>
@@ -185,7 +185,7 @@ export default function TasksScreen({ ctx }: Props) {
             </div>
             <div />
             <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 2 }}>
-              <span className="matrix-x-label">{t('matrix.notImportant')} ↓</span>
+              <span className="matrix-x-label">{t('matrix.notImportant')} â†“</span>
             </div>
           </div>
         </div>
@@ -250,3 +250,4 @@ export default function TasksScreen({ ctx }: Props) {
     </div>
   );
 }
+

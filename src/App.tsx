@@ -1,7 +1,9 @@
-import { useEffect, createContext, useContext, useState } from 'react';
+import { useEffect, createContext, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import type { Screen } from './types';
-import { useAppState, type AppStateContext } from './hooks/useAppState';
+import { useFirestoreState, type AppStateContext } from './hooks/useFirestoreState';
+import { useAuth } from './contexts/AuthContext';
 import Navigation from './components/layout/Navigation';
 import TodayScreen from './screens/TodayScreen';
 import TasksScreen from './screens/TasksScreen';
@@ -9,26 +11,36 @@ import ProjectsScreen from './screens/ProjectsScreen';
 import HabitsScreen from './screens/HabitsScreen';
 import ReviewScreen from './screens/ReviewScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import AuthScreen from './screens/auth/AuthScreen';
 import TaskForm from './components/tasks/TaskForm';
 
 const Ctx = createContext<AppStateContext | null>(null);
 export const useCtx = () => useContext(Ctx)!;
 
-export default function App() {
+function AppShell() {
   const { i18n } = useTranslation();
-  const appState = useAppState();
-  const { state, addTask, resetCompletedRecurring } = appState;
+  const appState = useFirestoreState();
+  const { state, addTask, resetCompletedRecurring, dataLoading } = appState;
   const [screen, setScreen] = useState<Screen>('today');
   const [fabOpen, setFabOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.settings.theme);
     i18n.changeLanguage(state.settings.language);
-  }, []);
+  }, [state.settings.theme, state.settings.language]);
 
   useEffect(() => {
-    resetCompletedRecurring();
-  }, []);
+    if (!dataLoading) void resetCompletedRecurring();
+  }, [dataLoading]);
+
+  if (dataLoading) {
+    return (
+      <div className="loading-screen">
+        <div className="sidebar-logo" style={{ width: 52, height: 52, fontSize: 20, borderRadius: 14, marginBottom: 16 }}>TW</div>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>Laden…</p>
+      </div>
+    );
+  }
 
   const renderScreen = () => {
     switch (screen) {
@@ -45,17 +57,14 @@ export default function App() {
     <Ctx.Provider value={appState}>
       <div className="app">
         <Navigation current={screen} onNavigate={setScreen} />
-
         <main className="content">
           {renderScreen()}
         </main>
-
         <button className="fab" onClick={() => setFabOpen(true)} aria-label="New task">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12 5v14M5 12h14"/>
           </svg>
         </button>
-
         {fabOpen && (
           <TaskForm
             isOpen
@@ -68,4 +77,18 @@ export default function App() {
       </div>
     </Ctx.Provider>
   );
+}
+
+export default function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="sidebar-logo" style={{ width: 52, height: 52, fontSize: 20, borderRadius: 14 }}>TW</div>
+      </div>
+    );
+  }
+
+  return user ? <AppShell /> : <AuthScreen />;
 }

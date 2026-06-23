@@ -1,6 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AppStateContext } from '../hooks/useAppState';
+import type { AppStateContext } from '../hooks/useFirestoreState';
 import { today, yesterday, formatDate, formatTime } from '../utils/dateHelpers';
 
 interface Props {
@@ -194,7 +194,7 @@ export default function ReviewScreen({ ctx }: Props) {
                 </svg>
                 <div className="review-log-item-body">
                   <span className="review-log-title">{entry.taskTitle}</span>
-                  <span className="review-log-progress">{entry.fromValue} → {entry.toValue}</span>
+                  <span className="review-log-progress">{entry.fromValue} â†’ {entry.toValue}</span>
                 </div>
               </div>
             ))}
@@ -215,3 +215,4 @@ export default function ReviewScreen({ ctx }: Props) {
     </div>
   );
 }
+

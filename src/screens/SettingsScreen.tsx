@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import type { AppStateContext } from '../hooks/useAppState';
+import type { AppStateContext } from '../hooks/useFirestoreState';
 import type { Language, Theme, Category } from '../types';
 import Modal from '../components/ui/Modal';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   ctx: AppStateContext;
@@ -21,6 +22,7 @@ const DEFAULT_ICONS = ['📁', '💼', '🏠', '🎯', '📚', '💡', '🛒', '
 
 export default function SettingsScreen({ ctx }: Props) {
   const { t } = useTranslation();
+  const { logout, user } = useAuth();
   const { state, updateSettings, addCategory, updateCategory, deleteCategory, exportData, importData } = ctx;
 
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -75,8 +77,8 @@ export default function SettingsScreen({ ctx }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
-      const ok = importData(ev.target?.result as string);
+    reader.onload = async ev => {
+      const ok = await importData(ev.target?.result as string);
       setImportMsg(ok ? t('settings.importSuccess') : t('settings.importError'));
       setTimeout(() => setImportMsg(''), 3000);
     };
@@ -223,6 +225,17 @@ export default function SettingsScreen({ ctx }: Props) {
             {importMsg}
           </p>
         )}
+      </div>
+
+      {/* Account */}
+      <div className="settings-section">
+        <h2 className="settings-section-title">Konto</h2>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>
+          {user?.email}
+        </p>
+        <button className="btn btn-outline btn-md" onClick={() => logout()}>
+          Abmelden
+        </button>
       </div>
 
       {addingCategory && catFormModal(t('category.add'), () => setAddingCategory(false))}

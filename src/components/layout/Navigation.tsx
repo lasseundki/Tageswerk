@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Screen } from '../../types';
 
@@ -7,7 +7,7 @@ interface Props {
   onNavigate: (s: Screen) => void;
 }
 
-const items: { key: Screen; label: string; icon: (active: boolean) => React.ReactNode }[] = [
+const primaryItems: { key: Screen; label: string; icon: (active: boolean) => React.ReactNode }[] = [
   {
     key: 'today',
     label: 'nav.today',
@@ -27,20 +27,24 @@ const items: { key: Screen; label: string; icon: (active: boolean) => React.Reac
     ),
   },
   {
-    key: 'projects',
-    label: 'nav.projects',
-    icon: (a) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a ? 2.5 : 2}>
-        <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-      </svg>
-    ),
-  },
-  {
     key: 'habits',
     label: 'nav.habits',
     icon: (a) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a ? 2.5 : 2}>
         <path d="M9 12l2 2 4-4"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+      </svg>
+    ),
+  },
+];
+
+const allItems: { key: Screen; label: string; icon: (active: boolean) => React.ReactNode }[] = [
+  ...primaryItems,
+  {
+    key: 'projects',
+    label: 'nav.projects',
+    icon: (a) => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a ? 2.5 : 2}>
+        <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
       </svg>
     ),
   },
@@ -65,8 +69,18 @@ const items: { key: Screen; label: string; icon: (active: boolean) => React.Reac
   },
 ];
 
+const moreScreens: Screen[] = ['projects', 'review', 'settings'];
+
 export default function Navigation({ current, onNavigate }: Props) {
   const { t } = useTranslation();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const isMoreActive = moreScreens.includes(current);
+
+  const handleNavigate = (s: Screen) => {
+    setMoreOpen(false);
+    onNavigate(s);
+  };
 
   return (
     <>
@@ -77,11 +91,11 @@ export default function Navigation({ current, onNavigate }: Props) {
           <span className="sidebar-name">Tageswerk</span>
         </div>
         <nav className="sidebar-nav">
-          {items.map(({ key, label, icon }) => (
+          {allItems.map(({ key, label, icon }) => (
             <button
               key={key}
               className={`nav-item${current === key ? ' active' : ''}`}
-              onClick={() => onNavigate(key)}
+              onClick={() => handleNavigate(key)}
             >
               {icon(current === key)}
               {t(label)}
@@ -90,19 +104,49 @@ export default function Navigation({ current, onNavigate }: Props) {
         </nav>
       </aside>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — primary 3 tabs + More */}
       <nav className="bottom-nav">
-        {items.map(({ key, label, icon }) => (
+        {primaryItems.map(({ key, label, icon }) => (
           <button
             key={key}
             className={`bottom-nav-item${current === key ? ' active' : ''}`}
-            onClick={() => onNavigate(key)}
+            onClick={() => handleNavigate(key)}
           >
             {icon(current === key)}
             {t(label)}
           </button>
         ))}
+
+        {/* More button */}
+        <button
+          className={`bottom-nav-item${isMoreActive || moreOpen ? ' active' : ''}`}
+          onClick={() => setMoreOpen(v => !v)}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={isMoreActive || moreOpen ? 2.5 : 2}>
+            <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+          </svg>
+          {t('nav.more')}
+        </button>
       </nav>
+
+      {/* More drawer overlay */}
+      {moreOpen && (
+        <>
+          <div className="more-overlay" onClick={() => setMoreOpen(false)} />
+          <div className="more-drawer">
+            {allItems.filter(i => moreScreens.includes(i.key)).map(({ key, label, icon }) => (
+              <button
+                key={key}
+                className={`more-drawer-item${current === key ? ' active' : ''}`}
+                onClick={() => handleNavigate(key)}
+              >
+                {icon(current === key)}
+                <span>{t(label)}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </>
   );
 }

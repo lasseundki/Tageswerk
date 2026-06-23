@@ -1,6 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AppStateContext } from '../hooks/useAppState';
+import type { AppStateContext } from '../hooks/useFirestoreState';
 import { useFocusSuggestion } from '../hooks/useFocusSuggestion';
 import { today, timeProgress } from '../utils/dateHelpers';
 import { getTodayHabits, getHabitLog } from '../utils/habitHelpers';
@@ -205,3 +205,4 @@ export default function TodayScreen({ ctx }: Props) {
     </div>
   );
 }
+

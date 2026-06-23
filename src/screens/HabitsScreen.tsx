@@ -1,6 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AppStateContext } from '../hooks/useAppState';
+import type { AppStateContext } from '../hooks/useFirestoreState';
 import type { HabitTimeOfDay } from '../types';
 import { today } from '../utils/dateHelpers';
 import { getTodayHabits, getHabitLog, getStreak, getCompletionRate, isHabitCompleted } from '../utils/habitHelpers';
@@ -93,13 +93,13 @@ export default function HabitsScreen({ ctx }: Props) {
           {showArchived ? t('habits.showArchived') : t('habits.title')}
         </h2>
         <button className="btn btn-ghost btn-sm" onClick={() => setShowArchived(v => !v)}>
-          {showArchived ? '← Aktive' : t('habits.showArchived')}
+          {showArchived ? 'â† Aktive' : t('habits.showArchived')}
         </button>
       </div>
 
       {visibleHabits.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🌱</div>
+          <div className="empty-state-icon">ðŸŒ±</div>
           <p>{t('habits.noHabits')}</p>
         </div>
       ) : (
@@ -127,7 +127,7 @@ export default function HabitsScreen({ ctx }: Props) {
                   </div>
                   <div className="habit-stats-row">
                     <div className="habit-stat">
-                      <span className="habit-stat-value">🔥 {streak}</span>
+                      <span className="habit-stat-value">ðŸ”¥ {streak}</span>
                       <span className="habit-stat-label">{t('habits.streak')}</span>
                     </div>
                     <div className="habit-stat">
@@ -175,3 +175,4 @@ export default function HabitsScreen({ ctx }: Props) {
     </div>
   );
 }
+

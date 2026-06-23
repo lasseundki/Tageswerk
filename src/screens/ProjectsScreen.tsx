@@ -1,6 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AppStateContext } from '../hooks/useAppState';
+import type { AppStateContext } from '../hooks/useFirestoreState';
 import type { Project } from '../types';
 import Modal from '../components/ui/Modal';
 
@@ -180,3 +180,4 @@ export default function ProjectsScreen({ ctx }: Props) {
     </div>
   );
 }
+

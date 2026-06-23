@@ -6,6 +6,7 @@ export default {
   nav: {
     today: 'Hoy', tasks: 'Tareas', projects: 'Proyectos',
     habits: 'Hábitos', review: 'Revisión', settings: 'Ajustes',
+    more: 'Más',
   },
   today: {
     todayTasks: 'Tareas de hoy',
