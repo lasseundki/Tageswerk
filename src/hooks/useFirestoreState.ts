@@ -205,6 +205,12 @@ export function useFirestoreState() {
     void updateDoc(fdoc(uid, 'tasks', id), { lastWorkedOn: today() });
   }, [uid]);
 
+  const toggleInProgress = useCallback((id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    void updateDoc(fdoc(uid, 'tasks', id), { inProgress: !task.inProgress });
+  }, [uid, tasks]);
+
   const incrementCounter = useCallback(async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task || task.progress.type !== 'counter') return;
@@ -430,7 +436,7 @@ export function useFirestoreState() {
   return {
     state,
     dataLoading,
-    addTask, updateTask, completeTask, reopenTask, deleteTask, markStarted,
+    addTask, updateTask, completeTask, reopenTask, deleteTask, markStarted, toggleInProgress,
     incrementCounter, decrementCounter, toggleSubtask,
     addProject, updateProject, deleteProject,
     addCategory, updateCategory, deleteCategory,

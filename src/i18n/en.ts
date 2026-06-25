@@ -22,6 +22,8 @@ export default {
   task: {
     add: 'Add task', complete: 'Complete', reopen: 'Reopen',
     progress: 'Progress', created: 'Created', completed: 'Completed',
+    inProgress: 'In progress', markInProgress: 'Mark as in progress',
+    workedToday: 'Worked today',
   },
   tasks: {
     empty: 'No tasks found',
@@ -46,6 +48,7 @@ export default {
     confirmDelete: 'Delete this item?',
     urgencyAuto: 'Auto (from due date)',
     address: 'Address', addressPlaceholder: 'Street, City…',
+    showInMatrix: 'Show in matrix',
   },
   priority: { high: 'High', medium: 'Medium', low: 'Low' },
   urgency: { today: 'Today', week: 'This week', month: 'This month', someday: 'Someday' },

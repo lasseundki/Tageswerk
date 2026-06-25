@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Task, Category } from '../../types';
-import { isOverdue, isToday, formatRelative } from '../../utils/dateHelpers';
+import { isOverdue, isToday, formatRelative, today } from '../../utils/dateHelpers';
 
 interface Props {
   task: Task;
@@ -14,6 +14,7 @@ interface Props {
 export default function TaskCard({ task, category, onOpen, onComplete, onIncrement, onDecrement }: Props) {
   const { t } = useTranslation();
   const done = task.status === 'completed';
+  const workedOnToday = !done && task.lastWorkedOn === today();
 
   const completedSubtasks = task.subTasks?.filter(st => st.isCompleted).length ?? 0;
   const totalSubtasks = task.subTasks?.length ?? 0;
@@ -48,6 +49,9 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
         <div className="task-card-top">
           <span className={`task-title${done ? ' done' : ''}`}>{task.title}</span>
           <div className="task-card-badges">
+            {task.inProgress && !done && (
+              <span className="badge badge-in-progress">{t('task.inProgress')}</span>
+            )}
             <span className={`badge badge-${task.priority}`}>{t(`priority.${task.priority}`)}</span>
             <span className={`badge badge-${task.mode}`}>
               {task.mode === 'digital' ? '💻' : '🤝'} {t(`mode.${task.mode}`)}
@@ -83,6 +87,9 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
               ⏱ {task.estimatedMinutes}min
             </span>
           )}
+          {workedOnToday && (
+            <span className="task-card-worked-today">{t('task.workedToday')}</span>
+          )}
         </div>
 
         {/* Counter progress */}
@@ -101,13 +108,25 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
           </div>
         )}
 
-        {/* Subtask progress */}
-        {task.progress.type === 'subtasks' && totalSubtasks > 0 && (
+        {/* Subtask progress bar (active tasks) */}
+        {task.progress.type === 'subtasks' && totalSubtasks > 0 && !done && (
           <div className="task-card-progress">
             <div className="progress-wrap" style={{ flex: 1 }}>
               <div className="progress-bar" style={{ width: `${subtaskPct}%` }} />
             </div>
             <span className="counter-value">{completedSubtasks}/{totalSubtasks}</span>
+          </div>
+        )}
+
+        {/* Subtask list (completed tasks) */}
+        {done && task.subTasks && task.subTasks.length > 0 && (
+          <div className="task-card-subtasks">
+            {task.subTasks.map(st => (
+              <div key={st.id} className={`task-card-subtask${st.isCompleted ? ' done' : ''}`}>
+                <span className="task-card-subtask-dot">{st.isCompleted ? '✓' : '○'}</span>
+                {st.title}
+              </div>
+            ))}
           </div>
         )}
       </div>

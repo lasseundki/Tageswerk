@@ -1,24 +1,22 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { AppState } from '../types';
 import { scoreTasks, type ScoredTask } from '../utils/scoring';
+import { today } from '../utils/dateHelpers';
 
 export function useFocusSuggestion(state: AppState) {
   const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
+  const todayStr = today();
 
-  const scored: ScoredTask[] = useMemo(
-    () => scoreTasks(state.tasks, state.activeContext, skippedIds),
-    [state.tasks, state.activeContext, skippedIds]
+  const suggestions: ScoredTask[] = useMemo(
+    () => scoreTasks(state.tasks, state.activeContext, skippedIds)
+      .filter(s => s.task.lastWorkedOn !== todayStr && !s.task.inProgress)
+      .slice(0, 3),
+    [state.tasks, state.activeContext, skippedIds, todayStr]
   );
 
-  const suggestion = scored[0] ?? null;
+  const skipSuggestion = useCallback((taskId: string) => {
+    setSkippedIds(prev => new Set([...prev, taskId]));
+  }, []);
 
-  const skipSuggestion = useCallback(() => {
-    if (suggestion) {
-      setSkippedIds(prev => new Set([...prev, suggestion.task.id]));
-    }
-  }, [suggestion]);
-
-  const resetSkipped = useCallback(() => setSkippedIds(new Set()), []);
-
-  return { suggestion, skipSuggestion, resetSkipped };
+  return { suggestions, skipSuggestion };
 }

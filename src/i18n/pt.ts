@@ -22,6 +22,8 @@ export default {
   task: {
     add: 'Adicionar tarefa', complete: 'Concluir', reopen: 'Reabrir',
     progress: 'Progresso', created: 'Criada', completed: 'Concluída',
+    inProgress: 'Em andamento', markInProgress: 'Marcar como em andamento',
+    workedToday: 'Trabalhado hoje',
   },
   tasks: {
     empty: 'Nenhuma tarefa encontrada',
@@ -46,6 +48,7 @@ export default {
     confirmDelete: 'Excluir este item?',
     urgencyAuto: 'Auto (da data limite)',
     address: 'Endereço', addressPlaceholder: 'Rua, Cidade…',
+    showInMatrix: 'Mostrar na matriz',
   },
   priority: { high: 'Alta', medium: 'Média', low: 'Baixa' },
   urgency: { today: 'Hoje', week: 'Esta semana', month: 'Este mês', someday: 'Algum dia' },

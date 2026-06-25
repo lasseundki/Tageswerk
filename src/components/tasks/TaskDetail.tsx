@@ -17,13 +17,14 @@ interface Props {
   onComplete: () => void;
   onReopen: () => void;
   onToggleSubtask: (subtaskId: string) => void;
+  onToggleInProgress: () => void;
   onIncrement: () => void;
   onDecrement: () => void;
 }
 
 export default function TaskDetail({
   task, category, project, categories, projects,
-  onClose, onUpdate, onDelete, onComplete, onReopen, onToggleSubtask,
+  onClose, onUpdate, onDelete, onComplete, onReopen, onToggleSubtask, onToggleInProgress,
   onIncrement, onDecrement,
 }: Props) {
   const { t } = useTranslation();
@@ -43,6 +44,14 @@ export default function TaskDetail({
   const footer = (
     <>
       <button className="btn btn-ghost btn-md" onClick={onClose}>{t('common.close')}</button>
+      {!done && (
+        <button
+          className={`btn btn-md ${task.inProgress ? 'btn-in-progress-active' : 'btn-outline'}`}
+          onClick={onToggleInProgress}
+        >
+          {task.inProgress ? t('task.inProgress') : t('task.markInProgress')}
+        </button>
+      )}
       <button className="btn btn-outline btn-md" onClick={() => setEditing(true)}>{t('common.edit')}</button>
       {done
         ? <button className="btn btn-secondary btn-md" onClick={onReopen}>{t('task.reopen')}</button>

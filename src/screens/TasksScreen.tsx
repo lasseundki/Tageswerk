@@ -41,7 +41,7 @@ function isUrgent(task: Task) {
 export default function TasksScreen({ ctx }: Props) {
   const { t } = useTranslation();
   const { state, addTask, updateTask, completeTask, reopenTask, deleteTask,
-    incrementCounter, decrementCounter, toggleSubtask } = ctx;
+    toggleInProgress, incrementCounter, decrementCounter, toggleSubtask } = ctx;
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [addingTask, setAddingTask] = useState(false);
@@ -87,8 +87,8 @@ export default function TasksScreen({ ctx }: Props) {
     />
   );
 
-  // Eisenhower quadrants (only active tasks)
-  const activeTasks = filtered.filter(t => t.status === 'active');
+  // Eisenhower quadrants (only active tasks explicitly marked for matrix)
+  const activeTasks = filtered.filter(t => t.status === 'active' && t.showInMatrix !== false);
   const q1 = activeTasks.filter(t => isImportant(t) && isUrgent(t));
   const q2 = activeTasks.filter(t => isImportant(t) && !isUrgent(t));
   const q3 = activeTasks.filter(t => !isImportant(t) && isUrgent(t));
@@ -262,6 +262,7 @@ export default function TasksScreen({ ctx }: Props) {
           onComplete={() => completeTask(selectedTask.id)}
           onReopen={() => reopenTask(selectedTask.id)}
           onToggleSubtask={stId => toggleSubtask(selectedTask.id, stId)}
+          onToggleInProgress={() => toggleInProgress(selectedTask.id)}
           onIncrement={() => incrementCounter(selectedTask.id)}
           onDecrement={() => decrementCounter(selectedTask.id)}
         />

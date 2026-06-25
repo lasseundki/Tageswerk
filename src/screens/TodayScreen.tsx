@@ -48,8 +48,8 @@ interface Props {
 export default function TodayScreen({ ctx }: Props) {
   const { t } = useTranslation();
   const { state, addTask, updateTask, completeTask, reopenTask, deleteTask, markStarted,
-    incrementCounter, decrementCounter, toggleSubtask, setActiveContext, updateDayNote,
-    toggleHabitDone, setHabitCount } = ctx;
+    toggleInProgress, incrementCounter, decrementCounter, toggleSubtask, setActiveContext,
+    updateDayNote, toggleHabitDone, setHabitCount } = ctx;
 
   const [clockMode, setClockMode] = useState<ClockMode>(getClockMode);
   const now = useClockTick();
@@ -68,7 +68,7 @@ export default function TodayScreen({ ctx }: Props) {
     .map(tod => ({ tod, habits: todayHabits.filter(h => h.timeOfDay === tod) }))
     .filter(g => g.habits.length > 0);
 
-  const { suggestion, skipSuggestion } = useFocusSuggestion(state);
+  const { suggestions, skipSuggestion } = useFocusSuggestion(state);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [addingTask, setAddingTask] = useState(false);
 
@@ -77,6 +77,7 @@ export default function TodayScreen({ ctx }: Props) {
 
   const todayTasks = state.tasks.filter(t =>
     t.status === 'active' && (
+      t.inProgress ||
       t.dueDate === todayStr ||
       (!t.dueDate && t.lastWorkedOn === todayStr)
     )
@@ -141,9 +142,9 @@ export default function TodayScreen({ ctx }: Props) {
       {/* Context selector */}
       <ContextSelector context={state.activeContext} onChange={setActiveContext} />
 
-      {/* Focus suggestion */}
+      {/* Focus suggestions */}
       <FocusSuggestion
-        suggestion={suggestion}
+        suggestions={suggestions}
         onSkip={skipSuggestion}
         onOpen={id => setSelectedTaskId(id)}
         onStart={id => { markStarted(id); setSelectedTaskId(id); }}
@@ -243,6 +244,7 @@ export default function TodayScreen({ ctx }: Props) {
           onComplete={() => completeTask(selectedTask.id)}
           onReopen={() => reopenTask(selectedTask.id)}
           onToggleSubtask={stId => toggleSubtask(selectedTask.id, stId)}
+          onToggleInProgress={() => toggleInProgress(selectedTask.id)}
           onIncrement={() => incrementCounter(selectedTask.id)}
           onDecrement={() => decrementCounter(selectedTask.id)}
         />

@@ -29,6 +29,9 @@ export default {
     progress: 'Fortschritt',
     created: 'Erstellt',
     completed: 'Erledigt',
+    inProgress: 'In Bearbeitung',
+    markInProgress: 'Als laufend markieren',
+    workedToday: 'Heute bearbeitet',
   },
   tasks: {
     empty: 'Keine Aufgaben gefunden',
@@ -63,6 +66,7 @@ export default {
     confirmDelete: 'Wirklich löschen?',
     urgencyAuto: 'Automatisch (aus Datum)',
     address: 'Adresse', addressPlaceholder: 'Straße, Stadt…',
+    showInMatrix: 'In Matrix anzeigen',
   },
   priority: { high: 'Hoch', medium: 'Mittel', low: 'Niedrig' },
   urgency: { today: 'Heute', week: 'Diese Woche', month: 'Dieser Monat', someday: 'Irgendwann' },

@@ -84,6 +84,8 @@ export interface Task {
   };
   subTasks?: SubTask[];
   status: 'active' | 'completed' | 'archived';
+  inProgress?: boolean;
+  showInMatrix?: boolean;
   createdAt: string;
   completedAt?: string;
   lastWorkedOn?: string;

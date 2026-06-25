@@ -24,6 +24,7 @@ interface FormData {
   progressTotal: string;
   progressUnit: string;
   subTasks: { id: string; title: string }[];
+  showInMatrix: boolean;
 }
 
 function taskToForm(task: Task): FormData {
@@ -47,6 +48,7 @@ function taskToForm(task: Task): FormData {
     progressTotal: task.progress.total?.toString() ?? '',
     progressUnit: task.progress.unit ?? '',
     subTasks: task.subTasks?.map(st => ({ id: st.id, title: st.title })) ?? [],
+    showInMatrix: task.showInMatrix ?? false,
   };
 }
 
@@ -74,6 +76,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
       dueDate: '', address: '', estimatedMinutes: '', isRecurring: false,
       recurringType: 'daily', recurringInterval: '1', recurringDaysOfWeek: [],
       progressType: 'checkbox', progressTotal: '', progressUnit: '', subTasks: [],
+      showInMatrix: false,
     }
   );
 
@@ -120,6 +123,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
         ? form.subTasks.map(st => ({ id: st.id, title: st.title, isCompleted: false }))
         : undefined,
       status: task?.status ?? 'active',
+      showInMatrix: form.showInMatrix,
       completedAt: task?.completedAt,
       lastWorkedOn: task?.lastWorkedOn,
     });
@@ -338,6 +342,13 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
               )}
             </div>
           )}
+        </div>
+
+        {/* Show in Matrix */}
+        <div className="toggle-row">
+          <span className="toggle-label">{t('form.showInMatrix')}</span>
+          <button className={`toggle${form.showInMatrix ? ' on' : ''}`}
+            onClick={() => set('showInMatrix', !form.showInMatrix)} />
         </div>
 
         <hr className="form-divider" />
