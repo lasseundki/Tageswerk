@@ -117,7 +117,10 @@ export default function TasksScreen({ ctx }: Props) {
   return (
     <div className="screen">
       <div className="screen-header">
-        <h1 className="screen-title">{t('nav.tasks')}</h1>
+        <h1 className="screen-title">
+          {t('nav.tasks')}
+          <span className="task-count-chip">{filtered.length}</span>
+        </h1>
         <button className="btn btn-outline btn-sm" onClick={() => setAddingTask(true)}>
           + {t('task.add')}
         </button>

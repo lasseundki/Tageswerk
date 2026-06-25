@@ -11,6 +11,7 @@ export default {
   today: {
     todayTasks: 'Tarefas de hoje',
     completedToday: 'Concluídas hoje',
+    dueToday: 'Para hoje',
   },
   focus: {
     suggestion: 'Sugestão',
@@ -67,6 +68,7 @@ export default {
     add: 'Adicionar projeto', edit: 'Editar projeto', name: 'Nome', color: 'Cor',
     activeTasks: 'tarefas ativas', completedTasks: 'concluídas',
     archive: 'Arquivar', unarchive: 'Desarquivar', archived: 'Arquivados',
+    notes: 'Notas', notesPlaceholder: 'Notas do projeto…',
   },
   projects: { empty: 'Nenhum projeto' },
   review: {

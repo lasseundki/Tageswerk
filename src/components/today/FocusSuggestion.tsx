@@ -21,43 +21,34 @@ export default function FocusSuggestion({ suggestions, onSkip, onOpen, onStart }
   }
 
   return (
-    <div className="focus-suggestions">
-      {suggestions.map(({ task, reasons }, i) => {
-        const reasonText = formatReasons(reasons, t);
-        return (
-          <div key={task.id} className={`focus-card${i > 0 ? ' focus-card--secondary' : ''}`} onClick={() => onOpen(task.id)}>
-            <div className="focus-card-header">
-              <div>
-                {i === 0 && <div className="focus-card-label">{t('focus.suggestion')}</div>}
-                <div className="focus-card-title">{task.title}</div>
-              </div>
-              <div className="focus-card-badges">
-                <span className={`badge badge-${task.priority}`}>{t(`priority.${task.priority}`)}</span>
-                <span className={`badge badge-${task.mode}`}>
-                  {task.mode === 'digital' ? '💻' : '🤝'}
-                </span>
+    <div className="focus-block">
+      <div className="focus-block-label">{t('focus.suggestion')}</div>
+      <div className="focus-block-grid" style={{ gridTemplateColumns: `repeat(${suggestions.length}, 1fr)` }}>
+        {suggestions.map(({ task, reasons }, i) => {
+          const reasonText = formatReasons(reasons, t);
+          return (
+            <div
+              key={task.id}
+              className={`focus-block-item${i < suggestions.length - 1 ? ' focus-block-item--border' : ''}`}
+              onClick={() => onOpen(task.id)}
+            >
+              <div className="focus-block-item-title">{task.title}</div>
+              {reasonText && <div className="focus-block-item-reason">{reasonText}</div>}
+              {task.estimatedMinutes && (
+                <div className="focus-block-item-effort">⏱ {task.estimatedMinutes} min</div>
+              )}
+              <div className="focus-block-item-actions" onClick={e => e.stopPropagation()}>
+                <button className="focus-block-skip" onClick={() => onSkip(task.id)}>
+                  {t('focus.skip')}
+                </button>
+                <button className="focus-block-start" onClick={() => onStart(task.id)}>
+                  {t('focus.start')}
+                </button>
               </div>
             </div>
-
-            {reasonText && (
-              <div className="focus-card-reasons">{reasonText}</div>
-            )}
-
-            {task.estimatedMinutes && (
-              <div className="focus-card-effort">⏱ {task.estimatedMinutes} min</div>
-            )}
-
-            <div className="focus-card-actions" onClick={e => e.stopPropagation()}>
-              <button className="btn btn-ghost btn-sm" onClick={() => onSkip(task.id)}>
-                {t('focus.skip')}
-              </button>
-              <button className="btn btn-primary btn-sm" onClick={() => onStart(task.id)}>
-                {t('focus.start')}
-              </button>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

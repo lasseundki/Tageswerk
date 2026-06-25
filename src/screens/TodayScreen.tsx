@@ -2,7 +2,7 @@
 import { useTranslation } from 'react-i18next';
 import type { AppStateContext } from '../hooks/useFirestoreState';
 import { useFocusSuggestion } from '../hooks/useFocusSuggestion';
-import { today, timeProgress } from '../utils/dateHelpers';
+import { today, timeProgress, effectiveUrgency } from '../utils/dateHelpers';
 import { getTodayHabits, getHabitLog } from '../utils/habitHelpers';
 import type { HabitTimeOfDay } from '../types';
 import HabitCard from '../components/habits/HabitCard';
@@ -87,6 +87,12 @@ export default function TodayScreen({ ctx }: Props) {
     t.status === 'completed' && t.completedAt?.startsWith(todayStr)
   );
 
+  // Tasks with an explicit today-deadline or urgency=today (shown prominently above suggestions)
+  const dueTodayTasks = state.tasks.filter(t =>
+    t.status === 'active' && !t.inProgress &&
+    (t.dueDate === todayStr || effectiveUrgency(t) === 'today')
+  );
+
   const selectedTask = selectedTaskId ? state.tasks.find(t => t.id === selectedTaskId) : null;
   const getCategory = (id: string) => state.categories.find(c => c.id === id);
   const getProject = (id?: string) => id ? state.projects.find(p => p.id === id) : undefined;
@@ -141,6 +147,33 @@ export default function TodayScreen({ ctx }: Props) {
 
       {/* Context selector */}
       <ContextSelector context={state.activeContext} onChange={setActiveContext} />
+
+      {/* Due today — mandatory tasks */}
+      {dueTodayTasks.length > 0 && (
+        <div className="due-today-section">
+          <div className="due-today-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            {t('today.dueToday')}
+          </div>
+          <div className="due-today-list">
+            {dueTodayTasks.map(task => (
+              <div key={task.id} className="due-today-item" onClick={() => setSelectedTaskId(task.id)}>
+                <button
+                  className={`task-checkbox${task.status === 'completed' ? ' checked' : ''}`}
+                  onClick={e => { e.stopPropagation(); completeTask(task.id); }}
+                  style={{ flexShrink: 0 }}
+                />
+                <span className="due-today-title">{task.title}</span>
+                {task.dueDate && (
+                  <span className="due-today-date">{task.dueDate === todayStr ? t('date.today') : ''}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Focus suggestions */}
       <FocusSuggestion
