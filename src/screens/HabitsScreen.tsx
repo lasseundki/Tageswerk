@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppStateContext } from '../hooks/useFirestoreState';
 import type { HabitTimeOfDay } from '../types';
@@ -6,6 +6,7 @@ import { today } from '../utils/dateHelpers';
 import { getTodayHabits, getHabitLog, getStreak, getCompletionRate, isHabitCompleted } from '../utils/habitHelpers';
 import HabitCard from '../components/habits/HabitCard';
 import HabitForm from '../components/habits/HabitForm';
+import HabitChart from '../components/habits/HabitChart';
 
 interface Props { ctx: AppStateContext; }
 
@@ -18,6 +19,7 @@ export default function HabitsScreen({ ctx }: Props) {
 
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
   const todayHabits = getTodayHabits(state.habits, todayStr);
@@ -93,13 +95,13 @@ export default function HabitsScreen({ ctx }: Props) {
           {showArchived ? t('habits.showArchived') : t('habits.title')}
         </h2>
         <button className="btn btn-ghost btn-sm" onClick={() => setShowArchived(v => !v)}>
-          {showArchived ? 'â† Aktive' : t('habits.showArchived')}
+          {showArchived ? '← Aktive' : t('habits.showArchived')}
         </button>
       </div>
 
       {visibleHabits.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">ðŸŒ±</div>
+          <div className="empty-state-icon">{'🌱'}</div>
           <p>{t('habits.noHabits')}</p>
         </div>
       ) : (
@@ -112,34 +114,54 @@ export default function HabitsScreen({ ctx }: Props) {
             const typeLabel = habit.type === 'count' && habit.targetCount
               ? `${habit.targetCount}${habit.unit ? ' ' + habit.unit : ''}`
               : t(`habits.${habit.type}`);
+            const isExpanded = expandedId === habit.id;
 
             return (
-              <div key={habit.id} className="habit-manage-card" onClick={() => setEditingId(habit.id)}>
-                <div className="habit-icon" style={{ background: habit.color + '22' }}>
-                  {habit.icon}
-                </div>
-                <div className="habit-manage-body">
-                  <div className="habit-manage-name">{habit.name}</div>
-                  <div className="habit-manage-meta">
-                    <span>{freqLabel}</span>
-                    <span>{typeLabel}</span>
-                    <span>{t(`habits.${habit.timeOfDay}`)}</span>
+              <div key={habit.id} className={`habit-manage-card${isExpanded ? ' habit-manage-card--expanded' : ''}`}>
+                <div
+                  className="habit-manage-main"
+                  onClick={() => setExpandedId(isExpanded ? null : habit.id)}
+                >
+                  <div className="habit-icon" style={{ background: habit.color + '22' }}>
+                    {habit.icon}
                   </div>
-                  <div className="habit-stats-row">
-                    <div className="habit-stat">
-                      <span className="habit-stat-value">ðŸ”¥ {streak}</span>
-                      <span className="habit-stat-label">{t('habits.streak')}</span>
+                  <div className="habit-manage-body">
+                    <div className="habit-manage-name">{habit.name}</div>
+                    <div className="habit-manage-meta">
+                      <span>{freqLabel}</span>
+                      <span>{typeLabel}</span>
+                      <span>{t(`habits.${habit.timeOfDay}`)}</span>
                     </div>
-                    <div className="habit-stat">
-                      <span className="habit-stat-value">{rate7}%</span>
-                      <span className="habit-stat-label">{t('habits.lastWeek')}</span>
-                    </div>
-                    <div className="habit-stat">
-                      <span className="habit-stat-value">{rate30}%</span>
-                      <span className="habit-stat-label">{t('habits.lastMonth')}</span>
+                    <div className="habit-stats-row">
+                      <div className="habit-stat">
+                        <span className="habit-stat-value">{'🔥'} {streak}</span>
+                        <span className="habit-stat-label">{t('habits.streak')}</span>
+                      </div>
+                      <div className="habit-stat">
+                        <span className="habit-stat-value">{rate7}%</span>
+                        <span className="habit-stat-label">{t('habits.lastWeek')}</span>
+                      </div>
+                      <div className="habit-stat">
+                        <span className="habit-stat-value">{rate30}%</span>
+                        <span className="habit-stat-label">{t('habits.lastMonth')}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className="habit-manage-chevron">{isExpanded ? '▲' : '▼'}</div>
                 </div>
+
+                {isExpanded && (
+                  <div className="habit-manage-expanded">
+                    <HabitChart habit={habit} logs={state.habitLogs} />
+                    <button
+                      className="btn btn-outline btn-sm"
+                      style={{ marginTop: 'var(--space-3)', alignSelf: 'flex-end' }}
+                      onClick={e => { e.stopPropagation(); setEditingId(habit.id); }}
+                    >
+                      {t('common.edit')}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -175,4 +197,3 @@ export default function HabitsScreen({ ctx }: Props) {
     </div>
   );
 }
-

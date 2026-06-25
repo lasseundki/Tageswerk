@@ -800,6 +800,55 @@ input, select, textarea { font-family: inherit; }
 .habit-stat-value { font-size: var(--text-base); font-weight: var(--font-bold); color: var(--color-text-primary); }
 .habit-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
 
+/* Habit manage card expanded state */
+.habit-manage-card { flex-direction: column; padding: 0; overflow: hidden; }
+.habit-manage-main {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-4); width: 100%; box-sizing: border-box;
+}
+.habit-manage-chevron {
+  font-size: 10px; color: var(--color-text-muted); margin-top: 2px; flex-shrink: 0;
+}
+.habit-manage-expanded {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex; flex-direction: column;
+}
+
+/* Habit 30-day chart */
+.habit-chart { display: flex; flex-direction: column; gap: var(--space-2); }
+.habit-chart svg { display: block; width: 100%; }
+.habit-chart-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--color-text-muted);
+}
+.habit-chart-target { color: var(--color-accent); font-weight: var(--font-semibold); }
+.habit-chart-squares {
+  display: flex; gap: 3px; flex-wrap: wrap;
+}
+.habit-chart-square {
+  width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}
+
+/* Search bar in Tasks screen */
+.search-bar {
+  display: flex; align-items: center; gap: var(--space-2);
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.search-icon { color: var(--color-text-muted); flex-shrink: 0; }
+.search-input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: var(--text-sm); color: var(--color-text-primary);
+}
+.search-input::placeholder { color: var(--color-text-muted); }
+.search-clear {
+  background: none; border: none; cursor: pointer; padding: 2px;
+  color: var(--color-text-muted); display: flex; align-items: center;
+}
+.search-clear:hover { color: var(--color-text-primary); }
+
 /* Color swatches for habits */
 .habit-color-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
 .habit-color-swatch {

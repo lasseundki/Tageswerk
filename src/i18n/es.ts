@@ -4,7 +4,7 @@ export default {
     edit: 'Editar', close: 'Cerrar', noProject: 'Sin proyecto',
   },
   nav: {
-    today: 'Hoy', tasks: 'Tareas', projects: 'Proyectos',
+    today: 'Hoy', tasks: 'Tareas', search: 'Buscar tareas…', projects: 'Proyectos',
     habits: 'Hábitos', review: 'Revisión', settings: 'Ajustes',
     more: 'Más',
   },

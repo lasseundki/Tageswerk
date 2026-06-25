@@ -51,6 +51,7 @@ export default function TasksScreen({ ctx }: Props) {
   const [modeFilter, setModeFilter] = useState<TaskMode | ''>('');
   const [view, setView] = useState<ViewMode>('grouped');
   const [sort, setSort] = useState<SortKey>('priority');
+  const [search, setSearch] = useState('');
 
   const getCategory = (id: string) => state.categories.find(c => c.id === id);
   const getProject = (id?: string) => id ? state.projects.find(p => p.id === id) : undefined;
@@ -60,6 +61,14 @@ export default function TasksScreen({ ctx }: Props) {
     if (categoryFilter && task.categoryId !== categoryFilter) return false;
     if (priorityFilter && task.priority !== priorityFilter) return false;
     if (modeFilter && task.mode !== modeFilter) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const cat = getCategory(task.categoryId);
+      const proj = getProject(task.projectId);
+      const haystack = [task.title, task.description, cat?.name, proj?.name]
+        .filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
     return true;
   });
 
@@ -112,6 +121,26 @@ export default function TasksScreen({ ctx }: Props) {
         <button className="btn btn-outline btn-sm" onClick={() => setAddingTask(true)}>
           + {t('task.add')}
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          className="search-input"
+          placeholder={t('nav.search')}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        {search && (
+          <button className="search-clear" onClick={() => setSearch('')}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Filters */}
