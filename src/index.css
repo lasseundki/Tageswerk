@@ -65,15 +65,15 @@ button { font-family: inherit; cursor: pointer; }
 input, select, textarea { font-family: inherit; }
 
 /* ─── APP LAYOUT ─────────────────────────────────────────────── */
-.app { display: flex; min-height: 100vh; }
+.app { display: flex; min-height: 100dvh; }
 .content {
   flex: 1; margin-left: var(--sidebar-width);
-  min-height: 100vh; background: var(--color-bg-subtle);
+  min-height: 100dvh; background: var(--color-bg-subtle);
 }
 
 /* ─── SIDEBAR ────────────────────────────────────────────────── */
 .sidebar {
-  width: var(--sidebar-width); min-height: 100vh;
+  width: var(--sidebar-width); min-height: 100dvh;
   background: var(--color-surface); border-right: 1px solid var(--color-border);
   display: flex; flex-direction: column;
   position: fixed; top: 0; bottom: 0; left: 0; z-index: 50;

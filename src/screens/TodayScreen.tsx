@@ -169,27 +169,7 @@ export default function TodayScreen({ ctx }: Props) {
         </section>
       )}
 
-      {/* Completed today */}
-      {completedToday.length > 0 && (
-        <section>
-          <h2 className="section-title">{t('today.completedToday')} ({completedToday.length})</h2>
-          <div className="task-list">
-            {completedToday.map(task => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                category={getCategory(task.categoryId)}
-                onOpen={() => setSelectedTaskId(task.id)}
-                onComplete={() => reopenTask(task.id)}
-                onIncrement={() => incrementCounter(task.id)}
-                onDecrement={() => decrementCounter(task.id)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Habits */}
+      {/* Habits — before completed so pending habits stay visible */}
       {habitGroups.length > 0 && (
         <section style={{ marginBottom: 'var(--space-6)' }}>
           <h2 className="section-label">{t('habits.todaySection')}</h2>
@@ -215,6 +195,26 @@ export default function TodayScreen({ ctx }: Props) {
               </div>
             </div>
           ))}
+        </section>
+      )}
+
+      {/* Completed today */}
+      {completedToday.length > 0 && (
+        <section>
+          <h2 className="section-title">{t('today.completedToday')} ({completedToday.length})</h2>
+          <div className="task-list">
+            {completedToday.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                category={getCategory(task.categoryId)}
+                onOpen={() => setSelectedTaskId(task.id)}
+                onComplete={() => reopenTask(task.id)}
+                onIncrement={() => incrementCounter(task.id)}
+                onDecrement={() => decrementCounter(task.id)}
+              />
+            ))}
+          </div>
         </section>
       )}
 

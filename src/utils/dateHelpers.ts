@@ -1,13 +1,17 @@
 import type { Task, Urgency } from '../types';
 
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function today(): string {
-  return new Date().toISOString().split('T')[0];
+  return localDateStr(new Date());
 }
 
 export function yesterday(): string {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
+  return localDateStr(d);
 }
 
 export function isToday(date: string): boolean {
@@ -17,7 +21,7 @@ export function isToday(date: string): boolean {
 export function isTomorrow(date: string): boolean {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  return date === d.toISOString().split('T')[0];
+  return date === localDateStr(d);
 }
 
 export function isThisWeek(date: string): boolean {
@@ -62,7 +66,7 @@ export function calculateNextDueDate(task: Task, fromDate: string): string {
     else if (type === 'weekly') d.setDate(d.getDate() + interval * 7);
     else if (type === 'monthly') d.setMonth(d.getMonth() + interval);
   }
-  return d.toISOString().split('T')[0];
+  return localDateStr(d);
 }
 
 export function formatTime(isoString: string): string {

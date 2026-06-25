@@ -21,12 +21,16 @@ export function getHabitLog(logs: HabitLog[], habitId: string, date: string): Ha
   return logs.find(l => l.habitId === habitId && l.date === date);
 }
 
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function getStreak(habit: Habit, logs: HabitLog[], todayStr: string): number {
   let streak = 0;
   const d = new Date(todayStr + 'T12:00:00');
 
   for (let i = 0; i < 365; i++) {
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = localDateStr(d);
     if (isScheduledForDate(habit, dateStr)) {
       const log = getHabitLog(logs, habit.id, dateStr);
       if (!isHabitCompleted(habit, log)) break;
@@ -43,7 +47,7 @@ export function getCompletionRate(habit: Habit, logs: HabitLog[], todayStr: stri
   const d = new Date(todayStr + 'T12:00:00');
 
   for (let i = 0; i < days; i++) {
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = localDateStr(d);
     if (isScheduledForDate(habit, dateStr)) {
       scheduled++;
       const log = getHabitLog(logs, habit.id, dateStr);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Task, Category, Project, Priority, Urgency, TaskMode, TaskLocation, ProgressType } from '../../types';
 import { generateId } from '../../utils/storage';
@@ -133,8 +133,21 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
         : [...form.recurringDaysOfWeek, d]
     );
 
-  const addSubtask = () =>
-    set('subTasks', [...form.subTasks, { id: generateId(), title: '' }]);
+  const [focusSubtaskId, setFocusSubtaskId] = useState<string | null>(null);
+  const subtaskRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  useEffect(() => {
+    if (focusSubtaskId && subtaskRefs.current[focusSubtaskId]) {
+      subtaskRefs.current[focusSubtaskId]!.focus();
+      setFocusSubtaskId(null);
+    }
+  }, [focusSubtaskId, form.subTasks]);
+
+  const addSubtask = () => {
+    const id = generateId();
+    set('subTasks', [...form.subTasks, { id, title: '' }]);
+    setFocusSubtaskId(id);
+  };
 
   const updateSubtask = (id: string, title: string) =>
     set('subTasks', form.subTasks.map(st => st.id === id ? { ...st, title } : st));
@@ -366,6 +379,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
               {form.subTasks.map(st => (
                 <div key={st.id} className="subtask-row">
                   <input className="input" placeholder={t('form.subtaskPlaceholder')}
+                    ref={el => { subtaskRefs.current[st.id] = el; }}
                     value={st.title} onChange={e => updateSubtask(st.id, e.target.value)} />
                   <button className="btn btn-ghost btn-icon btn-sm" onClick={() => removeSubtask(st.id)}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
