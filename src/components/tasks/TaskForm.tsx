@@ -48,7 +48,7 @@ function taskToForm(task: Task): FormData {
     progressTotal: task.progress.total?.toString() ?? '',
     progressUnit: task.progress.unit ?? '',
     subTasks: task.subTasks?.map(st => ({ id: st.id, title: st.title })) ?? [],
-    showInMatrix: task.showInMatrix ?? false,
+    showInMatrix: task.showInMatrix ?? true,
   };
 }
 
@@ -76,7 +76,7 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
       dueDate: '', address: '', estimatedMinutes: '', isRecurring: false,
       recurringType: 'daily', recurringInterval: '1', recurringDaysOfWeek: [],
       progressType: 'checkbox', progressTotal: '', progressUnit: '', subTasks: [],
-      showInMatrix: false,
+      showInMatrix: true,
     }
   );
 
