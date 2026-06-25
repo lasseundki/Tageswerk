@@ -40,6 +40,15 @@ const primaryItems: { key: Screen; label: string; icon: (active: boolean) => Rea
 const allItems: { key: Screen; label: string; icon: (active: boolean) => React.ReactNode }[] = [
   ...primaryItems,
   {
+    key: 'shopping' as Screen,
+    label: 'nav.shopping',
+    icon: (a) => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a ? 2.5 : 2}>
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/>
+      </svg>
+    ),
+  },
+  {
     key: 'projects',
     label: 'nav.projects',
     icon: (a) => (
@@ -69,7 +78,7 @@ const allItems: { key: Screen; label: string; icon: (active: boolean) => React.R
   },
 ];
 
-const moreScreens: Screen[] = ['projects', 'review', 'settings'];
+const moreScreens: Screen[] = ['shopping', 'projects', 'review', 'settings'];
 
 export default function Navigation({ current, onNavigate }: Props) {
   const { t } = useTranslation();

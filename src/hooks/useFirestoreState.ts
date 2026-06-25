@@ -7,7 +7,7 @@ import { db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import type {
   AppState, Task, Project, Category, ActiveContext,
-  ProgressEntry, JournalEntry, Habit, HabitLog, DayLog,
+  ProgressEntry, JournalEntry, Habit, HabitLog, DayLog, ShoppingItem,
 } from '../types';
 import { generateId, loadState } from '../utils/storage';
 import { today, calculateNextDueDate } from '../utils/dateHelpers';
@@ -44,6 +44,7 @@ export function useFirestoreState() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [habitLogs, setHabitLogs] = useState<HabitLog[]>([]);
   const [dayLogs, setDayLogs] = useState<DayLog[]>([]);
+  const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [settings, setSettingsState] = useState<AppState['settings']>(defaultSettings);
   const [activeContext, setActiveContextState] = useState<ActiveContext>({});
   const [dataLoading, setDataLoading] = useState(true);
@@ -100,7 +101,7 @@ export function useFirestoreState() {
 
     const mark = (name: string) => {
       loadedRef.current.add(name);
-      if (loadedRef.current.size >= 7) setDataLoading(false);
+      if (loadedRef.current.size >= 8) setDataLoading(false);
     };
 
     const unsubs: (() => void)[] = [];
@@ -148,6 +149,11 @@ export function useFirestoreState() {
       mark('settings');
     }));
 
+    unsubs.push(onSnapshot(col(uid, 'shoppingItems'), snap => {
+      setShoppingItems(snap.docs.map(d => ({ ...d.data(), id: d.id } as ShoppingItem)));
+      mark('shoppingItems');
+    }));
+
     // Check for migration after listeners are set up
     void (async () => {
       const tasksSnap = await getDocs(col(uid, 'tasks'));
@@ -158,7 +164,7 @@ export function useFirestoreState() {
   }, [uid, migrate]);
 
   // ── State object ───────────────────────────────────────────────
-  const state: AppState = { tasks, categories, projects, habits, habitLogs, dayLogs, settings, activeContext };
+  const state: AppState = { tasks, categories, projects, habits, habitLogs, dayLogs, shoppingItems, settings, activeContext };
 
   // ── Task helpers ───────────────────────────────────────────────
   const ensureDayLogDoc = async (date: string) => {
@@ -433,6 +439,30 @@ export function useFirestoreState() {
     await batch.commit();
   }, [uid, tasks]);
 
+  // ── Shopping list ──────────────────────────────────────────────
+  const addShoppingItem = useCallback((name: string, quantity?: string) => {
+    const id = generateId();
+    const item: ShoppingItem = { id, name, quantity, isChecked: false, createdAt: new Date().toISOString() };
+    void setDoc(fdoc(uid, 'shoppingItems', id), clean(item));
+  }, [uid]);
+
+  const toggleShoppingItem = useCallback((id: string) => {
+    const item = shoppingItems.find(i => i.id === id);
+    if (!item) return;
+    void updateDoc(fdoc(uid, 'shoppingItems', id), { isChecked: !item.isChecked });
+  }, [uid, shoppingItems]);
+
+  const removeShoppingItem = useCallback((id: string) => {
+    void deleteDoc(fdoc(uid, 'shoppingItems', id));
+  }, [uid]);
+
+  const clearCheckedShoppingItems = useCallback(() => {
+    const checked = shoppingItems.filter(i => i.isChecked);
+    const batch = writeBatch(db);
+    checked.forEach(i => batch.delete(fdoc(uid, 'shoppingItems', i.id)));
+    void batch.commit();
+  }, [uid, shoppingItems]);
+
   return {
     state,
     dataLoading,
@@ -444,5 +474,6 @@ export function useFirestoreState() {
     addHabit, updateHabit, deleteHabit, toggleHabitDone, setHabitCount,
     setActiveContext, updateSettings,
     exportData, importData, resetCompletedRecurring,
+    addShoppingItem, toggleShoppingItem, removeShoppingItem, clearCheckedShoppingItems,
   };
 }

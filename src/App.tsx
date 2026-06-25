@@ -11,6 +11,7 @@ import ProjectsScreen from './screens/ProjectsScreen';
 import HabitsScreen from './screens/HabitsScreen';
 import ReviewScreen from './screens/ReviewScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import ShoppingListScreen from './screens/ShoppingListScreen';
 import AuthScreen from './screens/auth/AuthScreen';
 import TaskForm from './components/tasks/TaskForm';
 
@@ -50,6 +51,7 @@ function AppShell() {
       case 'habits':   return <HabitsScreen ctx={appState} />;
       case 'review':   return <ReviewScreen ctx={appState} />;
       case 'settings': return <SettingsScreen ctx={appState} />;
+      case 'shopping': return <ShoppingListScreen ctx={appState} />;
     }
   };
 

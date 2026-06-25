@@ -18,8 +18,6 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
 
   const completedSubtasks = task.subTasks?.filter(st => st.isCompleted).length ?? 0;
   const totalSubtasks = task.subTasks?.length ?? 0;
-  const subtaskPct = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
-
   const counterPct = task.progress.total
     ? Math.min(100, ((task.progress.current ?? 0) / task.progress.total) * 100)
     : 0;
@@ -108,13 +106,26 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
           </div>
         )}
 
-        {/* Subtask progress bar (active tasks) */}
-        {task.progress.type === 'subtasks' && totalSubtasks > 0 && !done && (
-          <div className="task-card-progress">
-            <div className="progress-wrap" style={{ flex: 1 }}>
-              <div className="progress-bar" style={{ width: `${subtaskPct}%` }} />
+        {/* Subtask preview (active tasks) */}
+        {task.progress.type === 'subtasks' && task.subTasks && task.subTasks.length > 0 && !done && (
+          <div className="task-card-subtasks task-card-subtasks--preview">
+            <div className="task-card-subtask-header">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+              </svg>
+              {completedSubtasks}/{totalSubtasks}
             </div>
-            <span className="counter-value">{completedSubtasks}/{totalSubtasks}</span>
+            {task.subTasks.slice(0, 3).map(st => (
+              <div key={st.id} className={`task-card-subtask${st.isCompleted ? ' done' : ''}`}>
+                <span className="task-card-subtask-dot">{st.isCompleted ? '✓' : '○'}</span>
+                {st.title}
+              </div>
+            ))}
+            {task.subTasks.length > 3 && (
+              <div className="task-card-subtask" style={{ opacity: 0.45 }}>
+                +{task.subTasks.length - 3}
+              </div>
+            )}
           </div>
         )}
 

@@ -8,7 +8,15 @@ export type TaskLocation = 'anywhere' | 'home' | 'outside';
 export type ProgressType = 'checkbox' | 'counter' | 'subtasks';
 export type Language = 'de' | 'en' | 'es' | 'pt';
 export type Theme = 'light' | 'dark';
-export type Screen = 'today' | 'tasks' | 'projects' | 'habits' | 'review' | 'settings';
+export type Screen = 'today' | 'tasks' | 'projects' | 'habits' | 'review' | 'settings' | 'shopping';
+
+export interface ShoppingItem {
+  id: string;
+  name: string;
+  quantity?: string;
+  isChecked: boolean;
+  createdAt: string;
+}
 
 export interface Habit {
   id: string;
@@ -127,6 +135,7 @@ export interface AppState {
   dayLogs: DayLog[];
   habits: Habit[];
   habitLogs: HabitLog[];
+  shoppingItems: ShoppingItem[];
   activeContext: ActiveContext;
   settings: {
     theme: Theme;

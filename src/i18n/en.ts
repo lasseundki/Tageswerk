@@ -6,7 +6,14 @@ export default {
   nav: {
     today: 'Today', tasks: 'Tasks', search: 'Search tasks…', projects: 'Projects',
     habits: 'Habits', review: 'Review', settings: 'Settings',
-    more: 'More',
+    more: 'More', shopping: 'Shopping',
+  },
+  shopping: {
+    addPlaceholder: 'Add item…',
+    qty: 'Qty',
+    clearChecked: 'Clear checked',
+    checkedItems: 'Done',
+    empty: 'Shopping list is empty',
   },
   today: {
     todayTasks: "Today's tasks",
@@ -30,6 +37,7 @@ export default {
     empty: 'No tasks found',
     viewList: 'List', viewMatrix: 'Matrix', viewGrouped: 'Categories',
     sortPriority: 'Importance', sortUrgency: 'Urgency', sortDue: 'Due', sortAlpha: 'A–Z',
+    inclSubtasks: 'incl. subtasks',
   },
   filter: {
     active: 'Active', completed: 'Completed', all: 'All',

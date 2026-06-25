@@ -6,7 +6,14 @@ export default {
   nav: {
     today: 'Heute', tasks: 'Aufgaben', search: 'Aufgaben suchen…', projects: 'Projekte',
     habits: 'Gewohnheiten', review: 'Rückblick', settings: 'Einstellungen',
-    more: 'Mehr',
+    more: 'Mehr', shopping: 'Einkauf',
+  },
+  shopping: {
+    addPlaceholder: 'Artikel hinzufügen…',
+    qty: 'Menge',
+    clearChecked: 'Erledigt löschen',
+    checkedItems: 'Erledigt',
+    empty: 'Einkaufsliste ist leer',
   },
   today: {
     todayTasks: 'Heutige Aufgaben',
@@ -43,6 +50,7 @@ export default {
     sortUrgency: 'Dringlichkeit',
     sortDue: 'Fällig',
     sortAlpha: 'A–Z',
+    inclSubtasks: 'inkl. Unteraufgaben',
   },
   filter: {
     active: 'Aktiv',

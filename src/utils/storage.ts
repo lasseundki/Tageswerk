@@ -10,6 +10,7 @@ const defaultState: AppState = {
   dayLogs: [],
   habits: [],
   habitLogs: [],
+  shoppingItems: [],
   activeContext: {},
   settings: { theme: 'light', language: 'de' },
 };

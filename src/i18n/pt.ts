@@ -6,7 +6,14 @@ export default {
   nav: {
     today: 'Hoje', tasks: 'Tarefas', search: 'Pesquisar tarefas…', projects: 'Projetos',
     habits: 'Hábitos', review: 'Revisão', settings: 'Configurações',
-    more: 'Mais',
+    more: 'Mais', shopping: 'Compras',
+  },
+  shopping: {
+    addPlaceholder: 'Adicionar item…',
+    qty: 'Qtd.',
+    clearChecked: 'Limpar marcados',
+    checkedItems: 'Feito',
+    empty: 'Lista de compras vazia',
   },
   today: {
     todayTasks: 'Tarefas de hoje',
@@ -30,6 +37,7 @@ export default {
     empty: 'Nenhuma tarefa encontrada',
     viewList: 'Lista', viewMatrix: 'Matriz', viewGrouped: 'Categorias',
     sortPriority: 'Importância', sortUrgency: 'Urgência', sortDue: 'Prazo', sortAlpha: 'A–Z',
+    inclSubtasks: 'incl. subtarefas',
   },
   filter: {
     active: 'Ativa', completed: 'Concluída', all: 'Todas',

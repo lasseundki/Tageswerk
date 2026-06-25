@@ -198,6 +198,23 @@ export default function TasksScreen({ ctx }: Props) {
         )}
       </div>
 
+      {/* Task count summary (list + grouped views) */}
+      {view !== 'matrix' && sorted.length > 0 && (() => {
+        const subtaskCount = sorted.reduce((sum, t) =>
+          sum + (t.progress.type === 'subtasks' ? (t.subTasks?.length ?? 0) : 0), 0);
+        const total = sorted.length + subtaskCount;
+        return (
+          <div className="task-count-summary">
+            {sorted.length} {t('nav.tasks').toLowerCase()}
+            {subtaskCount > 0 && (
+              <span className="task-count-summary-sub">
+                ({total} {t('tasks.inclSubtasks')})
+              </span>
+            )}
+          </div>
+        );
+      })()}
+
       {/* MATRIX VIEW */}
       {view === 'matrix' && (
         <div>
