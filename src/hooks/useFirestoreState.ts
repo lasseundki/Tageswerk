@@ -347,6 +347,11 @@ export function useFirestoreState() {
     await updateDoc(fdoc(uid, 'dayLogs', date), { note });
   }, [uid, dayLogs]);
 
+  const updateDayTitle = useCallback(async (date: string, title: string) => {
+    await ensureDayLogDoc(date);
+    await updateDoc(fdoc(uid, 'dayLogs', date), { title: title || null });
+  }, [uid, dayLogs]);
+
   const addJournalEntry = useCallback(async (date: string, text: string) => {
     const entry: JournalEntry = { id: generateId(), text, createdAt: new Date().toISOString() };
     await ensureDayLogDoc(date);
@@ -496,7 +501,7 @@ export function useFirestoreState() {
     incrementCounter, decrementCounter, toggleSubtask,
     addProject, updateProject, deleteProject,
     addCategory, updateCategory, deleteCategory,
-    updateDayNote, addJournalEntry, updateJournalEntry, deleteJournalEntry,
+    updateDayNote, updateDayTitle, addJournalEntry, updateJournalEntry, deleteJournalEntry,
     addHabit, updateHabit, deleteHabit, toggleHabitDone, setHabitCount,
     setActiveContext, updateSettings,
     exportData, importData, resetCompletedRecurring,

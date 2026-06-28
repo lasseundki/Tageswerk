@@ -117,6 +117,7 @@ export interface JournalEntry {
 
 export interface DayLog {
   date: string;
+  title?: string;
   note?: string;
   journalEntries: JournalEntry[];
   completedTaskIds: string[];

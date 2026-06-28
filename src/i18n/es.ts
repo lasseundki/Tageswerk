@@ -83,6 +83,7 @@ export default {
     today: 'Hoy', yesterday: 'Ayer',
     completedTasks: 'Tareas completadas', noCompleted: 'Nada completado este día',
     progressEntries: 'Actualizaciones de progreso',
+    dayTitlePlaceholder: 'Título para este día…',
     dayNote: 'Nota del día', dayNotePlaceholder: '¿Cómo fue el día?',
     journal: 'Diario', journalPlaceholder: 'Pensamientos, gratitud, notas…',
     addEntry: 'Añadir entrada', noEntries: 'Sin entradas en el diario',

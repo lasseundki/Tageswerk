@@ -28,6 +28,22 @@ function dayOfWeek(date: string): string {
   return new Date(date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' });
 }
 
+function previewText(log: DayLog | undefined, tasks: { id: string; title: string }[], t: (k: string) => string): string | null {
+  if (log?.note?.trim()) return log.note.trim().slice(0, 80);
+  if (log?.journalEntries?.[0]?.text) return log.journalEntries[0].text.slice(0, 80);
+  if (log?.completedTaskIds?.length) {
+    const names = log.completedTaskIds
+      .slice(0, 2)
+      .map(id => tasks.find(t => t.id === id)?.title)
+      .filter(Boolean)
+      .join(', ');
+    return names
+      ? `${t('review.completedTasks')}: ${names}${log.completedTaskIds.length > 2 ? ` +${log.completedTaskIds.length - 2}` : ''}`
+      : null;
+  }
+  return null;
+}
+
 interface DayDetailProps {
   date: string;
   log: DayLog | undefined;
@@ -37,10 +53,11 @@ interface DayDetailProps {
 
 function DayDetail({ date, log, ctx, onBack }: DayDetailProps) {
   const { t } = useTranslation();
-  const { state, updateDayNote, addJournalEntry, updateJournalEntry, deleteJournalEntry } = ctx;
+  const { state, updateDayNote, updateDayTitle, addJournalEntry, updateJournalEntry, deleteJournalEntry } = ctx;
   const [newEntryText, setNewEntryText] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [titleDraft, setTitleDraft] = useState(log?.title ?? '');
 
   const completedTasks = (log?.completedTaskIds ?? [])
     .map(id => state.tasks.find(t => t.id === id))
@@ -64,6 +81,11 @@ function DayDetail({ date, log, ctx, onBack }: DayDetailProps) {
     setEditingText('');
   };
 
+  const saveTitle = () => {
+    const trimmed = titleDraft.trim();
+    if (trimmed !== (log?.title ?? '')) updateDayTitle(date, trimmed);
+  };
+
   return (
     <div className="screen">
       <div className="screen-header">
@@ -73,7 +95,22 @@ function DayDetail({ date, log, ctx, onBack }: DayDetailProps) {
           </svg>
           {t('nav.review')}
         </button>
-        <h2 className="review-detail-date">{dayLabel(date, t)}</h2>
+      </div>
+
+      {/* Date + editable title */}
+      <div className="review-detail-header">
+        <div className="review-detail-meta">
+          <span className="review-detail-dow">{dayOfWeek(date)}</span>
+          <span className="review-detail-date">{dayLabel(date, t)}</span>
+        </div>
+        <input
+          className="review-title-input"
+          placeholder={t('review.dayTitlePlaceholder')}
+          value={titleDraft}
+          onChange={e => setTitleDraft(e.target.value)}
+          onBlur={saveTitle}
+          onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); } }}
+        />
       </div>
 
       {/* Journal */}
@@ -199,6 +236,7 @@ export default function ReviewScreen({ ctx }: Props) {
   const [openDate, setOpenDate] = useState<string | null>(null);
 
   const dates = generateDates(90);
+  const taskList = state.tasks.map(t => ({ id: t.id, title: t.title }));
 
   if (openDate !== null) {
     const log = state.dayLogs.find(l => l.date === openDate);
@@ -220,6 +258,7 @@ export default function ReviewScreen({ ctx }: Props) {
           const isEmpty = taskCount === 0 && !hasNote && journalCount === 0;
           const isToday = date === today();
           const isYday = date === yesterday();
+          const preview = previewText(log, taskList, t);
 
           return (
             <button
@@ -233,34 +272,45 @@ export default function ReviewScreen({ ctx }: Props) {
                   {isToday ? t('review.today') : isYday ? t('review.yesterday') : formatDate(date)}
                 </span>
               </div>
-              <div className="review-day-card-chips">
-                {taskCount > 0 && (
-                  <span className="review-day-chip review-day-chip--tasks">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M20 6L9 17l-5-5"/>
-                    </svg>
-                    {taskCount}
-                  </span>
+              <div className="review-day-card-body">
+                {log?.title && (
+                  <span className="review-day-title">{log.title}</span>
                 )}
-                {hasNote && (
-                  <span className="review-day-chip review-day-chip--note">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </span>
+                {preview && !log?.title && (
+                  <span className="review-day-preview">{preview}</span>
                 )}
-                {journalCount > 0 && (
-                  <span className="review-day-chip review-day-chip--journal">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 6h16M4 12h16M4 18h7"/>
-                    </svg>
-                    {journalCount}
-                  </span>
+                {log?.title && preview && (
+                  <span className="review-day-preview">{preview}</span>
                 )}
-                {isEmpty && !isToday && (
-                  <span className="review-day-chip review-day-chip--empty">—</span>
-                )}
+                <div className="review-day-card-chips">
+                  {taskCount > 0 && (
+                    <span className="review-day-chip review-day-chip--tasks">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                      {taskCount}
+                    </span>
+                  )}
+                  {hasNote && (
+                    <span className="review-day-chip review-day-chip--note">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </span>
+                  )}
+                  {journalCount > 0 && (
+                    <span className="review-day-chip review-day-chip--journal">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 6h16M4 12h16M4 18h7"/>
+                      </svg>
+                      {journalCount}
+                    </span>
+                  )}
+                  {isEmpty && !isToday && (
+                    <span className="review-day-chip review-day-chip--empty">—</span>
+                  )}
+                </div>
               </div>
               <svg className="review-day-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 18l6-6-6-6"/>
