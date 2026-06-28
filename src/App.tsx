@@ -11,6 +11,7 @@ import HabitsScreen from './screens/HabitsScreen';
 import ReviewScreen from './screens/ReviewScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ShoppingListScreen from './screens/ShoppingListScreen';
+import EinordnenScreen from './screens/EinordnenScreen';
 import AuthScreen from './screens/auth/AuthScreen';
 import TaskForm from './components/tasks/TaskForm';
 import Toast from './components/ui/Toast';
@@ -68,7 +69,8 @@ function AppShell() {
       case 'habits':   return <HabitsScreen ctx={enhancedCtx} />;
       case 'review':   return <ReviewScreen ctx={enhancedCtx} />;
       case 'settings': return <SettingsScreen ctx={enhancedCtx} />;
-      case 'shopping': return <ShoppingListScreen ctx={enhancedCtx} />;
+      case 'shopping':   return <ShoppingListScreen ctx={enhancedCtx} />;
+      case 'einordnen': return <EinordnenScreen ctx={enhancedCtx} />;
     }
   };
 

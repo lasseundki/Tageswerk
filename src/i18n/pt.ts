@@ -6,7 +6,17 @@ export default {
   nav: {
     today: 'Hoje', tasks: 'Tarefas', search: 'Pesquisar tarefas…', projects: 'Projetos',
     habits: 'Hábitos', review: 'Revisão', settings: 'Configurações',
-    more: 'Mais', shopping: 'Compras',
+    more: 'Mais', shopping: 'Compras', einordnen: 'Classificar', extras: 'Mais ferramentas',
+  },
+  einordnen: {
+    title: 'Classificar tarefas',
+    unsorted: 'Sem classificar',
+    showHidden: 'Mostrar ocultos',
+    hideHidden: 'Ocultar ocultos',
+    hiddenCount: 'oculto',
+    hide: 'Ocultar',
+    show: 'Mostrar',
+    src: { obligation: 'Obrigação', self: 'Eu quero', other: 'Para outros' },
   },
   shopping: {
     addPlaceholder: 'Adicionar item…',
@@ -103,6 +113,7 @@ export default {
     icon: 'Ícone', color: 'Cor',
     archive: 'Arquivar', unarchive: 'Desarquivar', delete: 'Excluir',
     showArchived: 'Mostrar arquivados',
+    showActive: '← Ativos',
   },
   settings: {
     language: 'Idioma', theme: 'Tema', theme_light: 'Claro', theme_dark: 'Escuro',

@@ -95,7 +95,7 @@ export default function HabitsScreen({ ctx }: Props) {
           {showArchived ? t('habits.showArchived') : t('habits.title')}
         </h2>
         <button className="btn btn-ghost btn-sm" onClick={() => setShowArchived(v => !v)}>
-          {showArchived ? '← Aktive' : t('habits.showArchived')}
+          {showArchived ? t('habits.showActive') : t('habits.showArchived')}
         </button>
       </div>
 

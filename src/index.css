@@ -1151,3 +1151,168 @@ input, select, textarea { font-family: inherit; }
   gap: var(--space-2); margin-top: var(--space-4);
 }
 .btn-lg { padding: var(--space-3) var(--space-6); font-size: var(--text-base); }
+
+/* ─── DARK MODE ──────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-bg:             #1A1917;
+  --color-bg-subtle:      #1E1D1B;
+  --color-bg-muted:       #2A2825;
+  --color-surface:        #252320;
+  --color-border:         #3A3733;
+  --color-border-strong:  #4D4A45;
+
+  --color-text-primary:   #F0EDE8;
+  --color-text-secondary: #A8A49E;
+  --color-text-muted:     #706C66;
+  --color-text-inverse:   #1C1916;
+
+  --color-accent-light:   #1E3530;
+  --color-accent-dark:    #A8C8BF;
+
+  --color-success-light:  #1E3530;
+  --color-warning-light:  #3A2E18;
+  --color-error-light:    #3A1E1C;
+  --color-info-light:     #1E2A38;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-md: 0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-lg: 0 4px 6px rgba(0,0,0,0.30), 0 2px 4px rgba(0,0,0,0.20);
+  --shadow-xl: 0 10px 15px rgba(0,0,0,0.35), 0 4px 6px rgba(0,0,0,0.20);
+}
+
+/* Override hardcoded white backgrounds in dark mode */
+[data-theme="dark"] .btn-secondary,
+[data-theme="dark"] .input,
+[data-theme="dark"] select.input,
+[data-theme="dark"] textarea.input,
+[data-theme="dark"] .counter-btn,
+[data-theme="dark"] .habit-check,
+[data-theme="dark"] .habit-counter-btn,
+[data-theme="dark"] .sort-select,
+[data-theme="dark"] .review-title-input {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+[data-theme="dark"] .habit-check.checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+[data-theme="dark"] .matrix-quadrant-q1 { background: #2A1E1E; }
+[data-theme="dark"] .matrix-quadrant-q3 { background: #26231A; }
+[data-theme="dark"] .btn-in-progress-active {
+  background: #2E2710; color: #D4A843; border-color: #8A6A22;
+}
+[data-theme="dark"] .auth-error {
+  background: #2A1A1A; border-color: #6B2E2E; color: #F0A0A0;
+}
+[data-theme="dark"] .auth-info {
+  background: #1A2E28; border-color: #2E6B54; color: #80C4A8;
+}
+
+/* ─── MORE DRAWER: WEITERES SUB-SECTION ─────────────────────── */
+.more-drawer-extras-toggle {
+  justify-content: flex-start;
+}
+.more-drawer-sub {
+  background: var(--color-bg-subtle);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.more-drawer-sub-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  width: 100%; padding: var(--space-3) var(--space-5) var(--space-3) var(--space-8);
+  border: none; background: transparent; cursor: pointer;
+  font-size: var(--text-sm); font-weight: var(--font-medium);
+  color: var(--color-text-secondary); text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.more-drawer-sub-item:hover { background: var(--color-bg-muted); color: var(--color-text-primary); }
+.more-drawer-sub-item.active { color: var(--color-accent); font-weight: var(--font-semibold); }
+
+/* ─── EINORDNEN SCREEN ───────────────────────────────────────── */
+.einordnen-intro {
+  font-size: var(--text-sm); color: var(--color-text-muted);
+  margin-bottom: var(--space-5); line-height: 1.5;
+}
+.einordnen-section {
+  margin-bottom: var(--space-5);
+}
+.einordnen-section-header {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-border-strong);
+  margin-bottom: var(--space-2);
+}
+.einordnen-section-title {
+  font-size: var(--text-sm); font-weight: var(--font-semibold);
+  color: var(--color-text-secondary); flex: 1;
+}
+.einordnen-section-count {
+  font-size: var(--text-xs); font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  background: var(--color-bg-muted);
+  padding: 2px 7px; border-radius: var(--radius-full);
+}
+.einordnen-task {
+  display: flex; align-items: center; gap: var(--space-3);
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-3);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+.einordnen-task--hidden {
+  opacity: 0.45;
+}
+.einordnen-task-info {
+  display: flex; align-items: center; gap: var(--space-2);
+  flex: 1; min-width: 0;
+}
+.einordnen-cat-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.einordnen-task-title {
+  font-size: var(--text-sm); color: var(--color-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.einordnen-task-actions {
+  display: flex; align-items: center; gap: var(--space-1); flex-shrink: 0;
+}
+.einordnen-src-btn {
+  padding: 3px 9px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border-strong);
+  background: transparent; color: var(--color-text-secondary);
+  font-size: 11px; font-weight: var(--font-medium);
+  cursor: pointer; transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.einordnen-src-btn:hover {
+  border-color: var(--color-accent); color: var(--color-accent);
+}
+.einordnen-src-btn.active {
+  color: white;
+}
+.einordnen-hide-btn {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+.einordnen-hide-btn:hover { border-color: var(--color-error); color: var(--color-error); }
+
+.einordnen-toggle-hidden {
+  display: flex; align-items: center; gap: var(--space-2);
+  margin-top: var(--space-4); padding: var(--space-2) var(--space-4);
+  border: 1.5px dashed var(--color-border); border-radius: var(--radius-md);
+  background: transparent; cursor: pointer; width: 100%;
+  font-size: var(--text-sm); color: var(--color-text-muted);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.einordnen-toggle-hidden:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.einordnen-hidden-badge {
+  font-size: var(--text-xs); font-weight: var(--font-semibold);
+  background: var(--color-bg-muted); color: var(--color-text-muted);
+  padding: 1px 6px; border-radius: var(--radius-full);
+}

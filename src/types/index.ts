@@ -8,7 +8,7 @@ export type TaskLocation = 'anywhere' | 'home' | 'outside';
 export type ProgressType = 'checkbox' | 'counter' | 'subtasks';
 export type Language = 'de' | 'en' | 'es' | 'pt';
 export type Theme = 'light' | 'dark';
-export type Screen = 'today' | 'tasks' | 'projects' | 'habits' | 'review' | 'settings' | 'shopping';
+export type Screen = 'today' | 'tasks' | 'projects' | 'habits' | 'review' | 'settings' | 'shopping' | 'einordnen';
 
 export interface ShoppingItem {
   id: string;
@@ -92,6 +92,7 @@ export interface Task {
   };
   subTasks?: SubTask[];
   status: 'active' | 'completed' | 'archived';
+  motivationSource?: 'obligation' | 'self' | 'other' | null;
   inProgress?: boolean;
   showInMatrix?: boolean;
   lastCompletedDate?: string;

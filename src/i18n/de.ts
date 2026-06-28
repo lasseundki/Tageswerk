@@ -6,7 +6,17 @@ export default {
   nav: {
     today: 'Heute', tasks: 'Aufgaben', search: 'Aufgaben suchen…', projects: 'Projekte',
     habits: 'Gewohnheiten', review: 'Rückblick', settings: 'Einstellungen',
-    more: 'Mehr', shopping: 'Einkauf',
+    more: 'Mehr', shopping: 'Einkauf', einordnen: 'Einordnen', extras: 'Weiteres',
+  },
+  einordnen: {
+    title: 'Aufgaben einordnen',
+    unsorted: 'Unsortiert',
+    showHidden: 'Versteckte anzeigen',
+    hideHidden: 'Versteckte ausblenden',
+    hiddenCount: 'ausgeblendet',
+    hide: 'Ausblenden',
+    show: 'Einblenden',
+    src: { obligation: 'Pflicht', self: 'Ich will', other: 'Für andere' },
   },
   shopping: {
     addPlaceholder: 'Artikel hinzufügen…',
@@ -129,6 +139,7 @@ export default {
     icon: 'Symbol', color: 'Farbe',
     archive: 'Archivieren', unarchive: 'Wiederherstellen', delete: 'Löschen',
     showArchived: 'Archivierte anzeigen',
+    showActive: '← Aktive',
   },
   settings: {
     language: 'Sprache', theme: 'Design', theme_light: 'Hell', theme_dark: 'Dunkel',

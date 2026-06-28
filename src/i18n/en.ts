@@ -6,7 +6,17 @@ export default {
   nav: {
     today: 'Today', tasks: 'Tasks', search: 'Search tasks…', projects: 'Projects',
     habits: 'Habits', review: 'Review', settings: 'Settings',
-    more: 'More', shopping: 'Shopping',
+    more: 'More', shopping: 'Shopping', einordnen: 'Classify', extras: 'More tools',
+  },
+  einordnen: {
+    title: 'Classify Tasks',
+    unsorted: 'Unsorted',
+    showHidden: 'Show hidden',
+    hideHidden: 'Hide hidden',
+    hiddenCount: 'hidden',
+    hide: 'Hide',
+    show: 'Show',
+    src: { obligation: 'Obligation', self: 'I want', other: 'For others' },
   },
   shopping: {
     addPlaceholder: 'Add item…',
@@ -103,6 +113,7 @@ export default {
     icon: 'Icon', color: 'Color',
     archive: 'Archive', unarchive: 'Unarchive', delete: 'Delete',
     showArchived: 'Show archived',
+    showActive: '← Active',
   },
   settings: {
     language: 'Language', theme: 'Theme', theme_light: 'Light', theme_dark: 'Dark',
