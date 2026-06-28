@@ -188,20 +188,46 @@ export function useFirestoreState() {
   }, [uid]);
 
   const completeTask = useCallback(async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
     const now = new Date().toISOString();
     const date = today();
-    await updateDoc(fdoc(uid, 'tasks', id), { status: 'completed', completedAt: now });
+
+    if (task.isRecurring) {
+      if (task.lastCompletedDate === date) {
+        // Toggle off: un-complete
+        await updateDoc(fdoc(uid, 'tasks', id), { lastCompletedDate: null });
+        return;
+      }
+      // Complete recurring: keep active, reset progress, set lastCompletedDate
+      await updateDoc(fdoc(uid, 'tasks', id), clean({
+        lastCompletedDate: date,
+        lastWorkedOn: date,
+        progress: task.progress.type !== 'checkbox'
+          ? { ...task.progress, current: 0 }
+          : task.progress,
+        subTasks: task.subTasks?.map(st => ({ ...st, isCompleted: false, completedAt: null })),
+      }));
+    } else {
+      await updateDoc(fdoc(uid, 'tasks', id), { status: 'completed', completedAt: now });
+    }
+
     await ensureDayLogDoc(date);
     const log = dayLogs.find(l => l.date === date);
     const ids = log?.completedTaskIds ?? [];
     if (!ids.includes(id)) {
       await updateDoc(fdoc(uid, 'dayLogs', date), { completedTaskIds: [...ids, id] });
     }
-  }, [uid, dayLogs]);
+  }, [uid, tasks, dayLogs]);
 
   const reopenTask = useCallback((id: string) => {
-    void updateDoc(fdoc(uid, 'tasks', id), { status: 'active', completedAt: null });
-  }, [uid]);
+    const task = tasks.find(t => t.id === id);
+    if (task?.isRecurring) {
+      void updateDoc(fdoc(uid, 'tasks', id), { lastCompletedDate: null });
+    } else {
+      void updateDoc(fdoc(uid, 'tasks', id), { status: 'active', completedAt: null });
+    }
+  }, [uid, tasks]);
 
   const deleteTask = useCallback((id: string) => {
     void deleteDoc(fdoc(uid, 'tasks', id));

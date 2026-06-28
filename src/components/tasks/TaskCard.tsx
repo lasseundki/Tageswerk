@@ -13,7 +13,8 @@ interface Props {
 
 export default function TaskCard({ task, category, onOpen, onComplete, onIncrement, onDecrement }: Props) {
   const { t } = useTranslation();
-  const done = task.status === 'completed';
+  const done = task.status === 'completed' ||
+    (task.isRecurring && task.lastCompletedDate === today());
   const workedOnToday = !done && task.lastWorkedOn === today();
 
   const completedSubtasks = task.subTasks?.filter(st => st.isCompleted).length ?? 0;

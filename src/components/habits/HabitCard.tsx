@@ -19,6 +19,7 @@ export default function HabitCard({ habit, log, allLogs, onToggle, onCount, onCl
   const streak = getStreak(habit, allLogs, todayStr);
   const currentCount = log?.count ?? 0;
   const target = habit.targetCount ?? 1;
+  const isOverTarget = habit.type === 'count' && currentCount > target;
   const countPct = habit.type === 'count' ? Math.min(100, (currentCount / target) * 100) : 0;
 
   return (
@@ -36,12 +37,18 @@ export default function HabitCard({ habit, log, allLogs, onToggle, onCount, onCl
             <span className="habit-streak">🔥 {streak} {t('habits.days')}</span>
           )}
           {habit.type === 'count' && (
-            <span className="habit-rate">{currentCount}/{target} {habit.unit ?? ''}</span>
+            <span className={`habit-rate${isOverTarget ? ' habit-rate--bonus' : ''}`}>
+              {currentCount}/{target} {habit.unit ?? ''}
+              {isOverTarget && <span className="habit-bonus-badge">+{currentCount - target}</span>}
+            </span>
           )}
         </div>
         {habit.type === 'count' && (
           <div className="habit-count-bar-wrap" style={{ marginTop: 4, width: '100%' }}>
-            <div className="habit-count-bar" style={{ width: `${countPct}%` }} />
+            <div
+              className={`habit-count-bar${completed ? ' habit-count-bar--done' : ''}${isOverTarget ? ' habit-count-bar--bonus' : ''}`}
+              style={{ width: `${countPct}%` }}
+            />
           </div>
         )}
       </div>

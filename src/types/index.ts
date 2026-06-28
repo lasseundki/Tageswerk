@@ -94,6 +94,7 @@ export interface Task {
   status: 'active' | 'completed' | 'archived';
   inProgress?: boolean;
   showInMatrix?: boolean;
+  lastCompletedDate?: string;
   createdAt: string;
   completedAt?: string;
   lastWorkedOn?: string;

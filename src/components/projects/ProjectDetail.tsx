@@ -160,7 +160,9 @@ export default function ProjectDetail({ project, ctx, onClose, onEdit }: Props) 
           onClose={() => setAddingTask(false)}
           categories={state.categories}
           projects={state.projects}
-          onSave={data => { addTask({ ...data, projectId: project.id, categoryId: project.categoryId }); }}
+          defaultProjectId={project.id}
+          defaultCategoryId={project.categoryId}
+          onSave={data => { addTask(data); }}
         />
       )}
     </>

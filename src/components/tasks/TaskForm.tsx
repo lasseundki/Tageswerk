@@ -60,19 +60,23 @@ interface Props {
   task?: Task;
   categories: Category[];
   projects: Project[];
+  defaultProjectId?: string;
+  defaultCategoryId?: string;
 }
 
 const PRIORITY_OPTS: Priority[] = ['high', 'medium', 'low'];
 const URGENCY_OPTS: Urgency[] = ['today', 'week', 'month', 'someday'];
 const DAY_INDICES = [1, 2, 3, 4, 5, 6, 0];
 
-export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, categories, projects }: Props) {
+export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, categories, projects, defaultProjectId, defaultCategoryId }: Props) {
   const { t } = useTranslation();
 
   const [form, setForm] = useState<FormData>(() =>
     task ? taskToForm(task) : {
-      title: '', description: '', categoryId: categories[0]?.id ?? '',
-      projectId: '', priority: 'low', urgency: 'someday', mode: 'digital', location: 'anywhere',
+      title: '', description: '',
+      categoryId: defaultCategoryId ?? categories[0]?.id ?? '',
+      projectId: defaultProjectId ?? '',
+      priority: 'low', urgency: 'someday', mode: 'digital', location: 'anywhere',
       dueDate: '', address: '', estimatedMinutes: '', isRecurring: false,
       recurringType: 'daily', recurringInterval: '1', recurringDaysOfWeek: [],
       progressType: 'checkbox', progressTotal: '', progressUnit: '', subTasks: [],

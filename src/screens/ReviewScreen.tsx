@@ -1,64 +1,64 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppStateContext } from '../hooks/useFirestoreState';
+import type { DayLog } from '../types';
 import { today, yesterday, formatDate, formatTime } from '../utils/dateHelpers';
 
-interface Props {
-  ctx: AppStateContext;
+interface Props { ctx: AppStateContext; }
+
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function ReviewScreen({ ctx }: Props) {
+function generateDates(count: number): string[] {
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return localDateStr(d);
+  });
+}
+
+function dayLabel(date: string, t: (k: string) => string): string {
+  if (date === today()) return t('review.today');
+  if (date === yesterday()) return t('review.yesterday');
+  return formatDate(date);
+}
+
+function dayOfWeek(date: string): string {
+  return new Date(date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' });
+}
+
+interface DayDetailProps {
+  date: string;
+  log: DayLog | undefined;
+  ctx: AppStateContext;
+  onBack: () => void;
+}
+
+function DayDetail({ date, log, ctx, onBack }: DayDetailProps) {
   const { t } = useTranslation();
   const { state, updateDayNote, addJournalEntry, updateJournalEntry, deleteJournalEntry } = ctx;
-
-  const todayStr = today();
-  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [newEntryText, setNewEntryText] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
 
-  const dates = Array.from(new Set([todayStr, ...state.dayLogs.map(l => l.date)]))
-    .sort((a, b) => b.localeCompare(a))
-    .slice(0, 30);
-
-  const selectedLog = state.dayLogs.find(l => l.date === selectedDate);
-
-  const completedTasks = (selectedLog?.completedTaskIds ?? [])
+  const completedTasks = (log?.completedTaskIds ?? [])
     .map(id => state.tasks.find(t => t.id === id))
     .filter(Boolean);
 
-  const progressEntries = selectedLog?.progressEntries ?? [];
-  const journalEntries = selectedLog?.journalEntries ?? [];
-
-  const prevDate = () => {
-    const idx = dates.indexOf(selectedDate);
-    if (idx < dates.length - 1) setSelectedDate(dates[idx + 1]);
-  };
-
-  const nextDate = () => {
-    const idx = dates.indexOf(selectedDate);
-    if (idx > 0) setSelectedDate(dates[idx - 1]);
-  };
-
-  const isToday = selectedDate === todayStr;
-  const isYesterday = selectedDate === yesterday();
-  const dateLabel = isToday ? t('review.today') : isYesterday ? t('review.yesterday') : formatDate(selectedDate);
+  const progressEntries = log?.progressEntries ?? [];
+  const journalEntries = log?.journalEntries ?? [];
 
   const handleAddEntry = () => {
     const text = newEntryText.trim();
     if (!text) return;
-    addJournalEntry(selectedDate, text);
+    addJournalEntry(date, text);
     setNewEntryText('');
-  };
-
-  const startEdit = (id: string, text: string) => {
-    setEditingId(id);
-    setEditingText(text);
   };
 
   const saveEdit = () => {
     if (editingId && editingText.trim()) {
-      updateJournalEntry(selectedDate, editingId, editingText.trim());
+      updateJournalEntry(date, editingId, editingText.trim());
     }
     setEditingId(null);
     setEditingText('');
@@ -67,22 +67,13 @@ export default function ReviewScreen({ ctx }: Props) {
   return (
     <div className="screen">
       <div className="screen-header">
-        <h1 className="screen-title">{t('nav.review')}</h1>
-      </div>
-
-      {/* Date navigation */}
-      <div className="date-nav">
-        <button className="btn btn-ghost btn-icon btn-sm" onClick={prevDate} disabled={dates.indexOf(selectedDate) >= dates.length - 1}>
+        <button className="btn btn-ghost btn-sm review-back-btn" onClick={onBack}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
+          {t('nav.review')}
         </button>
-        <span className="date-nav-label">{dateLabel}</span>
-        <button className="btn btn-ghost btn-icon btn-sm" onClick={nextDate} disabled={selectedDate === todayStr}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </button>
+        <h2 className="review-detail-date">{dayLabel(date, t)}</h2>
       </div>
 
       {/* Journal */}
@@ -100,14 +91,14 @@ export default function ReviewScreen({ ctx }: Props) {
                 <span className="journal-entry-time">{formatTime(entry.createdAt)}{entry.updatedAt ? ' *' : ''}</span>
                 <div className="journal-entry-actions">
                   {editingId !== entry.id && (
-                    <button className="btn btn-ghost btn-icon btn-sm" onClick={() => startEdit(entry.id, entry.text)}>
+                    <button className="btn btn-ghost btn-icon btn-sm" onClick={() => { setEditingId(entry.id); setEditingText(entry.text); }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                       </svg>
                     </button>
                   )}
-                  <button className="btn btn-ghost btn-icon btn-sm" onClick={() => deleteJournalEntry(selectedDate, entry.id)}>
+                  <button className="btn btn-ghost btn-icon btn-sm" onClick={() => deleteJournalEntry(date, entry.id)}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M18 6L6 18M6 6l12 12"/>
                     </svg>
@@ -116,12 +107,8 @@ export default function ReviewScreen({ ctx }: Props) {
               </div>
               {editingId === entry.id ? (
                 <>
-                  <textarea
-                    className="journal-entry-textarea"
-                    value={editingText}
-                    onChange={e => setEditingText(e.target.value)}
-                    autoFocus
-                  />
+                  <textarea className="journal-entry-textarea" value={editingText}
+                    onChange={e => setEditingText(e.target.value)} autoFocus />
                   <div className="journal-add-actions">
                     <button className="btn btn-ghost btn-sm" onClick={() => setEditingId(null)}>{t('common.cancel')}</button>
                     <button className="btn btn-primary btn-sm" onClick={saveEdit}>{t('common.save')}</button>
@@ -133,16 +120,10 @@ export default function ReviewScreen({ ctx }: Props) {
             </div>
           ))}
         </div>
-
-        {/* Add new entry */}
         <div className="journal-add-area">
-          <textarea
-            className="journal-add-textarea"
-            placeholder={t('review.journalPlaceholder')}
-            value={newEntryText}
-            onChange={e => setNewEntryText(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleAddEntry(); }}
-          />
+          <textarea className="journal-add-textarea" placeholder={t('review.journalPlaceholder')}
+            value={newEntryText} onChange={e => setNewEntryText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleAddEntry(); }} />
           <div className="journal-add-actions">
             <button className="btn btn-primary btn-sm" onClick={handleAddEntry} disabled={!newEntryText.trim()}>
               {t('review.addEntry')}
@@ -194,7 +175,7 @@ export default function ReviewScreen({ ctx }: Props) {
                 </svg>
                 <div className="review-log-item-body">
                   <span className="review-log-title">{entry.taskTitle}</span>
-                  <span className="review-log-progress">{entry.fromValue} â†’ {entry.toValue}</span>
+                  <span className="review-log-progress">{entry.fromValue} → {entry.toValue}</span>
                 </div>
               </div>
             ))}
@@ -205,14 +186,89 @@ export default function ReviewScreen({ ctx }: Props) {
       {/* Day note */}
       <section>
         <h2 className="section-title">{t('review.dayNote')}</h2>
-        <textarea
-          className="input day-note-area"
-          placeholder={t('review.dayNotePlaceholder')}
-          value={selectedLog?.note ?? ''}
-          onChange={e => updateDayNote(selectedDate, e.target.value)}
-        />
+        <textarea className="input day-note-area" placeholder={t('review.dayNotePlaceholder')}
+          value={log?.note ?? ''} onChange={e => updateDayNote(date, e.target.value)} />
       </section>
     </div>
   );
 }
 
+export default function ReviewScreen({ ctx }: Props) {
+  const { t } = useTranslation();
+  const { state } = ctx;
+  const [openDate, setOpenDate] = useState<string | null>(null);
+
+  const dates = generateDates(90);
+
+  if (openDate !== null) {
+    const log = state.dayLogs.find(l => l.date === openDate);
+    return <DayDetail date={openDate} log={log} ctx={ctx} onBack={() => setOpenDate(null)} />;
+  }
+
+  return (
+    <div className="screen">
+      <div className="screen-header">
+        <h1 className="screen-title">{t('nav.review')}</h1>
+      </div>
+
+      <div className="review-day-list">
+        {dates.map(date => {
+          const log = state.dayLogs.find(l => l.date === date);
+          const taskCount = log?.completedTaskIds.length ?? 0;
+          const hasNote = !!log?.note?.trim();
+          const journalCount = log?.journalEntries.length ?? 0;
+          const isEmpty = taskCount === 0 && !hasNote && journalCount === 0;
+          const isToday = date === today();
+          const isYday = date === yesterday();
+
+          return (
+            <button
+              key={date}
+              className={`review-day-card${isToday ? ' review-day-card--today' : ''}${isEmpty && !isToday ? ' review-day-card--empty' : ''}`}
+              onClick={() => setOpenDate(date)}
+            >
+              <div className="review-day-card-left">
+                <span className="review-day-dow">{dayOfWeek(date)}</span>
+                <span className="review-day-date-label">
+                  {isToday ? t('review.today') : isYday ? t('review.yesterday') : formatDate(date)}
+                </span>
+              </div>
+              <div className="review-day-card-chips">
+                {taskCount > 0 && (
+                  <span className="review-day-chip review-day-chip--tasks">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    {taskCount}
+                  </span>
+                )}
+                {hasNote && (
+                  <span className="review-day-chip review-day-chip--note">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </span>
+                )}
+                {journalCount > 0 && (
+                  <span className="review-day-chip review-day-chip--journal">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 6h16M4 12h16M4 18h7"/>
+                    </svg>
+                    {journalCount}
+                  </span>
+                )}
+                {isEmpty && !isToday && (
+                  <span className="review-day-chip review-day-chip--empty">—</span>
+                )}
+              </div>
+              <svg className="review-day-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
