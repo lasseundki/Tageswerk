@@ -52,6 +52,7 @@ export default function TasksScreen({ ctx }: Props) {
   const [view, setView] = useState<ViewMode>('grouped');
   const [sort, setSort] = useState<SortKey>('priority');
   const [search, setSearch] = useState('');
+  const [quickWinOnly, setQuickWinOnly] = useState(false);
 
   const getCategory = (id: string) => state.categories.find(c => c.id === id);
   const getProject = (id?: string) => id ? state.projects.find(p => p.id === id) : undefined;
@@ -89,10 +90,13 @@ export default function TasksScreen({ ctx }: Props) {
 
   // Eisenhower quadrants (only active tasks explicitly marked for matrix)
   const activeTasks = filtered.filter(t => t.status === 'active' && t.showInMatrix !== false);
-  const q1 = activeTasks.filter(t => isImportant(t) && isUrgent(t));
-  const q2 = activeTasks.filter(t => isImportant(t) && !isUrgent(t));
-  const q3 = activeTasks.filter(t => !isImportant(t) && isUrgent(t));
-  const q4 = activeTasks.filter(t => !isImportant(t) && !isUrgent(t));
+  const matrixTasks = quickWinOnly
+    ? activeTasks.filter(t => t.estimatedMinutes != null && t.estimatedMinutes <= 30)
+    : activeTasks;
+  const q1 = matrixTasks.filter(t => isImportant(t) && isUrgent(t));
+  const q2 = matrixTasks.filter(t => isImportant(t) && !isUrgent(t));
+  const q3 = matrixTasks.filter(t => !isImportant(t) && isUrgent(t));
+  const q4 = matrixTasks.filter(t => !isImportant(t) && !isUrgent(t));
 
   const renderMatrixQuadrant = (
     tasks: Task[],
@@ -195,6 +199,15 @@ export default function TasksScreen({ ctx }: Props) {
             <option value="due">{t('tasks.sortDue')}</option>
             <option value="alpha">{t('tasks.sortAlpha')}</option>
           </select>
+        )}
+        {view === 'matrix' && (
+          <button
+            className={`filter-chip${quickWinOnly ? ' active' : ''}`}
+            onClick={() => setQuickWinOnly(v => !v)}
+            title={t('tasks.quickWinHint')}
+          >
+            ⚡ {t('tasks.quickWin')}
+          </button>
         )}
       </div>
 

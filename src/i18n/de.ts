@@ -51,6 +51,7 @@ export default {
     sortDue: 'Fällig',
     sortAlpha: 'A–Z',
     inclSubtasks: 'inkl. Unteraufgaben',
+    quickWin: 'Quick Win', quickWinHint: 'Nur Aufgaben ≤ 30 Min',
   },
   filter: {
     active: 'Aktiv',

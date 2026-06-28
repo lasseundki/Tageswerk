@@ -38,6 +38,7 @@ export default {
     viewList: 'Lista', viewMatrix: 'Matriz', viewGrouped: 'Categorias',
     sortPriority: 'Importância', sortUrgency: 'Urgência', sortDue: 'Prazo', sortAlpha: 'A–Z',
     inclSubtasks: 'incl. subtarefas',
+    quickWin: 'Quick Win', quickWinHint: 'Apenas tarefas ≤ 30 min',
   },
   filter: {
     active: 'Ativa', completed: 'Concluída', all: 'Todas',
