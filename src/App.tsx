@@ -1,6 +1,5 @@
-import { useEffect, createContext, useContext } from 'react';
+import { useEffect, createContext, useContext, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import type { Screen } from './types';
 import { useFirestoreState, type AppStateContext } from './hooks/useFirestoreState';
 import { useAuth } from './contexts/AuthContext';
@@ -14,6 +13,9 @@ import SettingsScreen from './screens/SettingsScreen';
 import ShoppingListScreen from './screens/ShoppingListScreen';
 import AuthScreen from './screens/auth/AuthScreen';
 import TaskForm from './components/tasks/TaskForm';
+import Toast from './components/ui/Toast';
+import { checkMotivational } from './utils/motivationalToast';
+import { today } from './utils/dateHelpers';
 
 const Ctx = createContext<AppStateContext | null>(null);
 export const useCtx = () => useContext(Ctx)!;
@@ -24,6 +26,19 @@ function AppShell() {
   const { state, addTask, resetCompletedRecurring, dataLoading } = appState;
   const [screen, setScreen] = useState<Screen>('today');
   const [fabOpen, setFabOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const wrappedCompleteTask = useCallback(async (id: string) => {
+    const task = appState.state.tasks.find(t => t.id === id);
+    await appState.completeTask(id);
+    if (task) {
+      const isUncompleting = task.isRecurring && task.lastCompletedDate === today();
+      if (!isUncompleting) {
+        const msg = checkMotivational(task, appState.state, appState.state.settings.language);
+        if (msg) setToastMsg(msg);
+      }
+    }
+  }, [appState]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.settings.theme);
@@ -43,25 +58,28 @@ function AppShell() {
     );
   }
 
+  const enhancedCtx: AppStateContext = { ...appState, completeTask: wrappedCompleteTask };
+
   const renderScreen = () => {
     switch (screen) {
-      case 'today':    return <TodayScreen ctx={appState} />;
-      case 'tasks':    return <TasksScreen ctx={appState} />;
-      case 'projects': return <ProjectsScreen ctx={appState} />;
-      case 'habits':   return <HabitsScreen ctx={appState} />;
-      case 'review':   return <ReviewScreen ctx={appState} />;
-      case 'settings': return <SettingsScreen ctx={appState} />;
-      case 'shopping': return <ShoppingListScreen ctx={appState} />;
+      case 'today':    return <TodayScreen ctx={enhancedCtx} />;
+      case 'tasks':    return <TasksScreen ctx={enhancedCtx} />;
+      case 'projects': return <ProjectsScreen ctx={enhancedCtx} />;
+      case 'habits':   return <HabitsScreen ctx={enhancedCtx} />;
+      case 'review':   return <ReviewScreen ctx={enhancedCtx} />;
+      case 'settings': return <SettingsScreen ctx={enhancedCtx} />;
+      case 'shopping': return <ShoppingListScreen ctx={enhancedCtx} />;
     }
   };
 
   return (
-    <Ctx.Provider value={appState}>
+    <Ctx.Provider value={enhancedCtx}>
       <div className="app">
         <Navigation current={screen} onNavigate={setScreen} />
         <main className="content">
           {renderScreen()}
         </main>
+        {toastMsg && <Toast message={toastMsg} onDismiss={() => setToastMsg(null)} />}
         <button className="fab" onClick={() => setFabOpen(true)} aria-label="New task">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12 5v14M5 12h14"/>

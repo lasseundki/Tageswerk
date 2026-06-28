@@ -562,6 +562,35 @@ input, select, textarea { font-family: inherit; }
 .review-day-chip--empty { color: var(--color-text-muted); background: transparent; }
 .review-day-chevron { color: var(--color-text-muted); flex-shrink: 0; margin-left: auto; }
 
+/* ─── MOTIVATIONAL TOAST ──────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: calc(64px + var(--space-4));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--space-3);
+  background: #2C2C2A;
+  color: #F7F5F0;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  max-width: calc(100vw - 40px);
+  width: max-content;
+  z-index: 300;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  animation: toast-in 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toast-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-accent); flex-shrink: 0;
+}
+.toast-message { margin: 0; line-height: 1.4; }
+@keyframes toast-in {
+  from { transform: translateX(-50%) translateY(16px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
 .review-back-btn { display: flex; align-items: center; gap: var(--space-2); }
 .review-detail-date { font-size: var(--text-lg); font-weight: var(--font-semibold); color: var(--color-text-primary); }
 .task-card-subtask {
