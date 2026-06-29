@@ -107,6 +107,7 @@ export interface ProgressEntry {
   fromValue: number;
   toValue: number;
   timestamp: string;
+  subtaskTitle?: string;
 }
 
 export interface JournalEntry {

@@ -29,6 +29,7 @@ export default {
     todayTasks: 'Heutige Aufgaben',
     completedToday: 'Heute erledigt',
     dueToday: 'Heute fällig',
+    progressToday: 'Fortschritt heute',
   },
   focus: {
     suggestion: 'Empfehlung',

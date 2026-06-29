@@ -284,6 +284,8 @@ export function useFirestoreState() {
     const task = tasks.find(t => t.id === taskId);
     if (!task || !task.subTasks) return;
     const now = new Date().toISOString();
+    const subtask = task.subTasks.find(st => st.id === subtaskId);
+    const completing = subtask ? !subtask.isCompleted : false;
     const updated = task.subTasks.map(st =>
       st.id === subtaskId
         ? { ...st, isCompleted: !st.isCompleted, completedAt: !st.isCompleted ? now : undefined }
@@ -296,10 +298,20 @@ export function useFirestoreState() {
       completedAt: allDone ? now : null,
       lastWorkedOn: today(),
     }));
+    const date = today();
+    await ensureDayLogDoc(date);
+    const log = dayLogs.find(l => l.date === date);
+    if (completing && subtask) {
+      const completedBefore = (task.subTasks?.filter(st => st.isCompleted) ?? []).length;
+      const entry: ProgressEntry = {
+        taskId, taskTitle: task.title,
+        fromValue: completedBefore, toValue: completedBefore + 1,
+        timestamp: now, subtaskTitle: subtask.title,
+      };
+      const progressEntries = [...(log?.progressEntries ?? []), entry];
+      await updateDoc(fdoc(uid, 'dayLogs', date), clean({ progressEntries }));
+    }
     if (allDone) {
-      const date = today();
-      await ensureDayLogDoc(date);
-      const log = dayLogs.find(l => l.date === date);
       const ids = log?.completedTaskIds ?? [];
       if (!ids.includes(taskId)) {
         await updateDoc(fdoc(uid, 'dayLogs', date), { completedTaskIds: [...ids, taskId] });
@@ -451,23 +463,74 @@ export function useFirestoreState() {
   // ── Recurring reset ────────────────────────────────────────────
   const resetCompletedRecurring = useCallback(async () => {
     const todayStr = today();
-    const toReset = tasks.filter(t =>
-      t.isRecurring && t.status === 'completed' && t.dueDate && t.dueDate < todayStr
-    );
-    if (toReset.length === 0) return;
+
+    // Helper: days between two YYYY-MM-DD strings (timezone-safe)
+    function daysBetween(a: string, b: string): number {
+      const [ay, am, ad] = a.split('-').map(Number);
+      const [by, bm, bd] = b.split('-').map(Number);
+      return Math.floor((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000);
+    }
+
+    function periodHasPassed(lastWorkedOn: string, task: Task): boolean {
+      const diff = daysBetween(lastWorkedOn, todayStr);
+      const type = task.recurringPattern?.type ?? 'daily';
+      const interval = task.recurringPattern?.interval ?? 1;
+      if (type === 'daily') return diff >= interval;
+      if (type === 'weekly') return diff >= interval * 7;
+      if (type === 'monthly') {
+        const [ly, lm] = lastWorkedOn.split('-').map(Number);
+        const [ty, tm] = todayStr.split('-').map(Number);
+        return (ty - ly) * 12 + (tm - lm) >= interval;
+      }
+      return diff >= 1;
+    }
+
     const batch = writeBatch(db);
-    toReset.forEach(task => {
+    let hasWork = false;
+
+    // 1. dueDate-based completed recurring tasks (original logic)
+    tasks.filter(t => t.isRecurring && t.status === 'completed' && t.dueDate && t.dueDate < todayStr)
+      .forEach(task => {
+        hasWork = true;
+        batch.update(fdoc(uid, 'tasks', task.id), clean({
+          status: 'active',
+          completedAt: null,
+          dueDate: calculateNextDueDate(task, todayStr),
+          progress: task.progress.type !== 'checkbox' ? { ...task.progress, current: 0 } : task.progress,
+          subTasks: task.subTasks?.map(st => ({ ...st, isCompleted: false, completedAt: null })),
+        }));
+      });
+
+    // 2. lastCompletedDate-based recurring tasks where date has passed
+    tasks.filter(t => t.isRecurring && t.lastCompletedDate && t.lastCompletedDate < todayStr)
+      .forEach(task => {
+        hasWork = true;
+        batch.update(fdoc(uid, 'tasks', task.id), clean({
+          lastCompletedDate: null,
+          progress: task.progress.type !== 'checkbox' ? { ...task.progress, current: 0 } : task.progress,
+          subTasks: task.subTasks?.map(st => ({ ...st, isCompleted: false, completedAt: null })),
+        }));
+      });
+
+    // 3. Recurring counter/subtask tasks with stale progress from a past period
+    tasks.filter(t =>
+      t.isRecurring &&
+      !t.lastCompletedDate &&
+      t.status === 'active' &&
+      (t.progress.type === 'counter' || t.progress.type === 'subtasks') &&
+      (t.progress.current ?? 0) > 0 &&
+      t.lastWorkedOn && periodHasPassed(t.lastWorkedOn, t)
+    ).forEach(task => {
+      hasWork = true;
       batch.update(fdoc(uid, 'tasks', task.id), clean({
-        status: 'active',
-        completedAt: null,
-        dueDate: calculateNextDueDate(task, todayStr),
-        progress: task.progress.type !== 'checkbox'
-          ? { ...task.progress, current: 0 }
-          : task.progress,
-        subTasks: task.subTasks?.map(st => ({ ...st, isCompleted: false, completedAt: null })),
+        progress: { ...task.progress, current: 0 },
+        subTasks: task.progress.type === 'subtasks'
+          ? task.subTasks?.map(st => ({ ...st, isCompleted: false, completedAt: null }))
+          : task.subTasks,
       }));
     });
-    await batch.commit();
+
+    if (hasWork) await batch.commit();
   }, [uid, tasks]);
 
   // ── Shopping list ──────────────────────────────────────────────

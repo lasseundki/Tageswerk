@@ -252,6 +252,55 @@ export default function TodayScreen({ ctx }: Props) {
         </section>
       )}
 
+      {/* Progress today (counter + subtask entries) */}
+      {(() => {
+        const entries = todayLog?.progressEntries ?? [];
+        if (entries.length === 0) return null;
+
+        const counterGroups: { taskId: string; taskTitle: string; from: number; to: number }[] = [];
+        const subtaskItems: { taskTitle: string; subtaskTitle: string }[] = [];
+
+        entries.forEach(e => {
+          if (e.subtaskTitle) {
+            subtaskItems.push({ taskTitle: e.taskTitle, subtaskTitle: e.subtaskTitle });
+          } else {
+            const g = counterGroups.find(g => g.taskId === e.taskId);
+            if (g) { g.to = e.toValue; }
+            else { counterGroups.push({ taskId: e.taskId, taskTitle: e.taskTitle, from: e.fromValue, to: e.toValue }); }
+          }
+        });
+
+        return (
+          <section>
+            <h2 className="section-title">{t('today.progressToday')}</h2>
+            <div className="progress-log">
+              {counterGroups.map(g => {
+                const task = state.tasks.find(t => t.id === g.taskId);
+                const total = task?.progress.total;
+                return (
+                  <div key={g.taskId} className="progress-log-item">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2.5">
+                      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    <span className="progress-log-task-title">{g.taskTitle}</span>
+                    <span className="progress-log-counter">{g.from} → {g.to}{total ? ` / ${total}` : ''}</span>
+                  </div>
+                );
+              })}
+              {subtaskItems.map((e, i) => (
+                <div key={i} className="progress-log-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  <span className="progress-log-task-title">{e.subtaskTitle}</span>
+                  <span className="progress-log-sub">{e.taskTitle}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
       {/* Day note */}
       <section>
         <h2 className="section-title">{t('review.dayNote')}</h2>

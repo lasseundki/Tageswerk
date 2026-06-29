@@ -207,12 +207,27 @@ function DayDetail({ date, log, ctx, onBack }: DayDetailProps) {
           <div className="review-log-list">
             {progressEntries.map((entry, i) => (
               <div key={i} className="review-log-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
+                {entry.subtaskTitle ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                )}
                 <div className="review-log-item-body">
-                  <span className="review-log-title">{entry.taskTitle}</span>
-                  <span className="review-log-progress">{entry.fromValue} → {entry.toValue}</span>
+                  {entry.subtaskTitle ? (
+                    <>
+                      <span className="review-log-title">{entry.subtaskTitle}</span>
+                      <span className="review-log-sub">{entry.taskTitle}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="review-log-title">{entry.taskTitle}</span>
+                      <span className="review-log-progress">{entry.fromValue} → {entry.toValue}</span>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
