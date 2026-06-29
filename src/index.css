@@ -469,6 +469,11 @@ input, select, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; cursor: pointer; background: white;
   transition: all var(--transition-fast); margin-top: 1px;
+  /* Larger touch target without changing visual size */
+  position: relative;
+}
+.task-checkbox::before {
+  content: ''; position: absolute; inset: -10px;
 }
 .task-checkbox:hover { border-color: var(--color-accent); }
 .task-checkbox.checked { background: var(--color-accent); border-color: var(--color-accent); color: white; }
@@ -523,6 +528,10 @@ input, select, textarea { font-family: inherit; }
 }
 .shopping-item-remove { opacity: 0; transition: opacity var(--transition-fast); }
 .shopping-item:hover .shopping-item-remove { opacity: 1; }
+/* On touch devices there is no hover — always show the remove button */
+@media (hover: none) {
+  .shopping-item-remove { opacity: 1; }
+}
 .shopping-divider {
   font-size: var(--text-xs); font-weight: var(--font-semibold);
   text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-text-muted);
