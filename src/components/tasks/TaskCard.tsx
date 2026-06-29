@@ -108,27 +108,34 @@ export default function TaskCard({ task, category, onOpen, onComplete, onIncreme
         )}
 
         {/* Subtask preview (active tasks) */}
-        {task.progress.type === 'subtasks' && task.subTasks && task.subTasks.length > 0 && !done && (
-          <div className="task-card-subtasks task-card-subtasks--preview">
-            <div className="task-card-subtask-header">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
-              </svg>
-              {completedSubtasks}/{totalSubtasks}
+        {task.progress.type === 'subtasks' && task.subTasks && task.subTasks.length > 0 && !done && (() => {
+          const sorted = [...task.subTasks].sort((a, b) =>
+            a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1
+          );
+          const preview = sorted.slice(0, 3);
+          const hidden = sorted.length - 3;
+          return (
+            <div className="task-card-subtasks task-card-subtasks--preview">
+              <div className="task-card-subtask-header">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+                </svg>
+                {completedSubtasks}/{totalSubtasks}
+              </div>
+              {preview.map(st => (
+                <div key={st.id} className={`task-card-subtask${st.isCompleted ? ' done' : ''}`}>
+                  <span className="task-card-subtask-dot">{st.isCompleted ? '✓' : '○'}</span>
+                  {st.title}
+                </div>
+              ))}
+              {hidden > 0 && (
+                <div className="task-card-subtask" style={{ opacity: 0.45 }}>
+                  +{hidden}
+                </div>
+              )}
             </div>
-            {task.subTasks.slice(0, 3).map(st => (
-              <div key={st.id} className={`task-card-subtask${st.isCompleted ? ' done' : ''}`}>
-                <span className="task-card-subtask-dot">{st.isCompleted ? '✓' : '○'}</span>
-                {st.title}
-              </div>
-            ))}
-            {task.subTasks.length > 3 && (
-              <div className="task-card-subtask" style={{ opacity: 0.45 }}>
-                +{task.subTasks.length - 3}
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Subtask list (completed tasks) */}
         {done && task.subTasks && task.subTasks.length > 0 && (
