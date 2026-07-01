@@ -53,6 +53,21 @@ export default function TasksScreen({ ctx }: Props) {
   const [sort, setSort] = useState<SortKey>('priority');
   const [search, setSearch] = useState('');
   const [quickWinOnly, setQuickWinOnly] = useState(false);
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem('tw_collapsed_cats');
+      return new Set(raw ? JSON.parse(raw) as string[] : []);
+    } catch { return new Set(); }
+  });
+
+  const toggleCatCollapse = (catId: string) => {
+    setCollapsedCats(prev => {
+      const next = new Set(prev);
+      if (next.has(catId)) { next.delete(catId); } else { next.add(catId); }
+      localStorage.setItem('tw_collapsed_cats', JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   const getCategory = (id: string) => state.categories.find(c => c.id === id);
   const getProject = (id?: string) => id ? state.projects.find(p => p.id === id) : undefined;
@@ -270,16 +285,29 @@ export default function TasksScreen({ ctx }: Props) {
           : state.categories
               .map(cat => ({ category: cat, tasks: sortTasks(filtered.filter(t => t.categoryId === cat.id), sort) }))
               .filter(g => g.tasks.length > 0)
-              .map(({ category, tasks }) => (
-                <div key={category.id} className="category-group">
-                  <div className="category-group-header">
-                    <span className="category-dot" style={{ background: category.color }} />
-                    <span className="category-group-name">{category.icon} {category.name}</span>
-                    <span className="category-group-count">{tasks.length}</span>
+              .map(({ category, tasks }) => {
+                const collapsed = collapsedCats.has(category.id);
+                return (
+                  <div key={category.id} className="category-group">
+                    <button
+                      className="category-group-header category-group-header--btn"
+                      onClick={() => toggleCatCollapse(category.id)}
+                    >
+                      <span className="category-dot" style={{ background: category.color }} />
+                      <span className="category-group-name">{category.icon} {category.name}</span>
+                      <span className="category-group-count">{tasks.length}</span>
+                      <svg
+                        width="13" height="13" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2"
+                        style={{ marginLeft: 'auto', transition: 'transform 180ms', transform: collapsed ? 'rotate(-90deg)' : 'none', opacity: 0.4 }}
+                      >
+                        <path d="M6 9l6 6 6-6"/>
+                      </svg>
+                    </button>
+                    {!collapsed && <div className="task-list">{tasks.map(renderCard)}</div>}
                   </div>
-                  <div className="task-list">{tasks.map(renderCard)}</div>
-                </div>
-              ))
+                );
+              })
       )}
 
       {selectedTask && (
