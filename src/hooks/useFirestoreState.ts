@@ -291,11 +291,10 @@ export function useFirestoreState() {
         ? { ...st, isCompleted: !st.isCompleted, completedAt: !st.isCompleted ? now : undefined }
         : st
     );
-    const allDone = updated.every(st => st.isCompleted);
     await updateDoc(fdoc(uid, 'tasks', taskId), clean({
       subTasks: updated,
-      status: allDone ? 'completed' : 'active',
-      completedAt: allDone ? now : null,
+      status: 'active',
+      completedAt: null,
       lastWorkedOn: today(),
     }));
     const date = today();
@@ -310,12 +309,6 @@ export function useFirestoreState() {
       };
       const progressEntries = [...(log?.progressEntries ?? []), entry];
       await updateDoc(fdoc(uid, 'dayLogs', date), clean({ progressEntries }));
-    }
-    if (allDone) {
-      const ids = log?.completedTaskIds ?? [];
-      if (!ids.includes(taskId)) {
-        await updateDoc(fdoc(uid, 'dayLogs', date), { completedTaskIds: [...ids, taskId] });
-      }
     }
   }, [uid, tasks, dayLogs]);
 
