@@ -29,6 +29,16 @@ export default function HabitsScreen({ ctx }: Props) {
     showArchived ? h.isArchived : !h.isArchived
   ).sort((a, b) => a.order - b.order);
 
+  const handleReorder = (id: string, dir: 'up' | 'down') => {
+    const idx = visibleHabits.findIndex(h => h.id === id);
+    const targetIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= visibleHabits.length) return;
+    const a = visibleHabits[idx];
+    const b = visibleHabits[targetIdx];
+    updateHabit(a.id, { order: b.order });
+    updateHabit(b.id, { order: a.order });
+  };
+
   const groupedToday = TIME_ORDER.map(tod => ({
     tod,
     habits: todayHabits.filter(h => h.timeOfDay === tod),
@@ -122,6 +132,26 @@ export default function HabitsScreen({ ctx }: Props) {
                   className="habit-manage-main"
                   onClick={() => setExpandedId(isExpanded ? null : habit.id)}
                 >
+                  {!showArchived && (
+                    <div className="habit-reorder-btns" onClick={e => e.stopPropagation()}>
+                      <button
+                        className="habit-reorder-btn"
+                        disabled={visibleHabits.indexOf(habit) === 0}
+                        onClick={() => handleReorder(habit.id, 'up')}
+                        aria-label="Nach oben"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+                      </button>
+                      <button
+                        className="habit-reorder-btn"
+                        disabled={visibleHabits.indexOf(habit) === visibleHabits.length - 1}
+                        onClick={() => handleReorder(habit.id, 'down')}
+                        aria-label="Nach unten"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                      </button>
+                    </div>
+                  )}
                   <div className="habit-icon" style={{ background: habit.color + '22' }}>
                     {habit.icon}
                   </div>

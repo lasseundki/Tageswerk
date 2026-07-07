@@ -1357,3 +1357,20 @@ input, select, textarea { font-family: inherit; }
   flex-shrink: 0; max-width: 40%; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap;
 }
+
+/* ─── HABIT REORDER BUTTONS ──────────────────────────────────── */
+.habit-reorder-btns {
+  display: flex; flex-direction: column; gap: 2px;
+  flex-shrink: 0; margin-right: var(--space-1);
+}
+.habit-reorder-btn {
+  width: 24px; height: 24px; border: none; background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted); border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  padding: 0;
+}
+.habit-reorder-btn:hover:not(:disabled) {
+  background: var(--color-bg-muted); color: var(--color-text-primary);
+}
+.habit-reorder-btn:disabled { opacity: 0.2; cursor: not-allowed; }
