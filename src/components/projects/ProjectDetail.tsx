@@ -158,6 +158,7 @@ export default function ProjectDetail({ project, ctx, onClose, onEdit }: Props) 
         <TaskForm
           isOpen
           onClose={() => setAddingTask(false)}
+          tasks={state.tasks}
           categories={state.categories}
           projects={state.projects}
           defaultProjectId={project.id}

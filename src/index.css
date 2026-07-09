@@ -1358,6 +1358,35 @@ input, select, textarea { font-family: inherit; }
   text-overflow: ellipsis; white-space: nowrap;
 }
 
+/* ─── DUPLICATE HINT (TaskForm) ─────────────────────────────── */
+.dup-hint {
+  margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md); border-left: 3px solid;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-2); animation: fadeIn 200ms ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.dup-hint--active { background: var(--color-warning-light); border-left-color: var(--color-warning); }
+.dup-hint--completed { background: var(--color-info-light); border-left-color: var(--color-info); }
+.dup-hint-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.dup-hint-label { font-size: var(--text-xs); color: var(--color-text-secondary); }
+.dup-hint-date { color: var(--color-text-muted); }
+.dup-hint-title { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.dup-hint-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+.dup-hint-adopt {
+  font-size: 11px; padding: 3px 9px; white-space: nowrap;
+  border: 1.5px solid var(--color-info); border-radius: var(--radius-full);
+  background: transparent; cursor: pointer; color: var(--color-info);
+  transition: all var(--transition-fast);
+}
+.dup-hint-adopt:hover { background: var(--color-info); color: white; }
+.dup-hint-dismiss {
+  background: none; border: none; cursor: pointer; padding: 2px;
+  color: var(--color-text-muted); display: flex; align-items: center;
+  transition: color var(--transition-fast);
+}
+.dup-hint-dismiss:hover { color: var(--color-text-primary); }
+
 /* ─── HABIT REORDER BUTTONS ──────────────────────────────────── */
 .habit-reorder-btns {
   display: flex; flex-direction: column; gap: 2px;

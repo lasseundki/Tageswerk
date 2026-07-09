@@ -91,6 +91,7 @@ function AppShell() {
           <TaskForm
             isOpen
             onClose={() => setFabOpen(false)}
+            tasks={state.tasks}
             categories={state.categories}
             projects={state.projects}
             onSave={data => { addTask(data); }}

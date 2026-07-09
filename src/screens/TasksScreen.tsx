@@ -333,6 +333,7 @@ export default function TasksScreen({ ctx }: Props) {
         <TaskForm
           isOpen
           onClose={() => setAddingTask(false)}
+          tasks={state.tasks}
           categories={state.categories}
           projects={state.projects}
           onSave={data => { addTask(data); }}

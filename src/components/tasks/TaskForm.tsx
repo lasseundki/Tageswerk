@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Task, Category, Project, Priority, Urgency, TaskMode, TaskLocation, ProgressType } from '../../types';
 import { generateId } from '../../utils/storage';
+import { findDuplicate, type DuplicateHint } from '../../utils/duplicateDetector';
 import Modal from '../ui/Modal';
 
 interface FormData {
@@ -58,6 +59,7 @@ interface Props {
   onSave: (task: Omit<Task, 'id' | 'createdAt'>) => void;
   onDelete?: () => void;
   task?: Task;
+  tasks?: Task[];
   categories: Category[];
   projects: Project[];
   defaultProjectId?: string;
@@ -68,7 +70,7 @@ const PRIORITY_OPTS: Priority[] = ['high', 'medium', 'low'];
 const URGENCY_OPTS: Urgency[] = ['today', 'week', 'month', 'someday'];
 const DAY_INDICES = [1, 2, 3, 4, 5, 6, 0];
 
-export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, categories, projects, defaultProjectId, defaultCategoryId }: Props) {
+export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, tasks, categories, projects, defaultProjectId, defaultCategoryId }: Props) {
   const { t } = useTranslation();
 
   const [form, setForm] = useState<FormData>(() =>
@@ -86,6 +88,46 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
 
   const set = <K extends keyof FormData>(key: K, val: FormData[K]) =>
     setForm(prev => ({ ...prev, [key]: val }));
+
+  const [dupHint, setDupHint] = useState<DuplicateHint | null>(null);
+  const dismissedTitleRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!tasks || task) { setDupHint(null); return; }
+    if (form.title === dismissedTitleRef.current) return;
+    const timer = setTimeout(() => {
+      setDupHint(findDuplicate(form.title, tasks));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [form.title, tasks, task]);
+
+  const adoptFromTask = (source: Task) => {
+    setForm(prev => ({
+      ...prev,
+      description: source.description ?? prev.description,
+      categoryId: source.categoryId,
+      projectId: source.projectId ?? prev.projectId,
+      priority: source.priority,
+      urgency: source.urgency,
+      mode: source.mode,
+      location: source.location,
+      estimatedMinutes: source.estimatedMinutes?.toString() ?? prev.estimatedMinutes,
+      progressType: source.progress.type,
+      progressTotal: source.progress.total?.toString() ?? '',
+      progressUnit: source.progress.unit ?? '',
+      subTasks: source.subTasks?.map(st => ({ id: generateId(), title: st.title })) ?? [],
+      isRecurring: source.isRecurring,
+      recurringType: source.recurringPattern?.type ?? 'daily',
+      recurringInterval: source.recurringPattern?.interval.toString() ?? '1',
+      recurringDaysOfWeek: source.recurringPattern?.daysOfWeek ?? [],
+    }));
+    setDupHint(null);
+  };
+
+  const dismissHint = () => {
+    dismissedTitleRef.current = form.title;
+    setDupHint(null);
+  };
 
   const filteredProjects = projects.filter(p => !p.isArchived);
 
@@ -187,6 +229,34 @@ export default function TaskForm({ isOpen, onClose, onSave, onDelete, task, cate
           <input className="input" placeholder={t('form.titlePlaceholder')}
             value={form.title} onChange={e => set('title', e.target.value)}
             autoFocus />
+          {dupHint && (
+            <div className={`dup-hint${dupHint.isActive ? ' dup-hint--active' : ' dup-hint--completed'}`}>
+              <div className="dup-hint-body">
+                <span className="dup-hint-label">
+                  {dupHint.isActive ? t('form.dupActive') : t('form.dupCompleted')}
+                  {!dupHint.isActive && dupHint.task.completedAt && (
+                    <span className="dup-hint-date">
+                      {' '}({new Date(dupHint.task.completedAt).toLocaleDateString()})
+                    </span>
+                  )}
+                  {': '}
+                </span>
+                <span className="dup-hint-title">{dupHint.task.title}</span>
+              </div>
+              <div className="dup-hint-actions">
+                {!dupHint.isActive && (
+                  <button className="dup-hint-adopt" onClick={() => adoptFromTask(dupHint.task)}>
+                    {t('form.dupAdopt')}
+                  </button>
+                )}
+                <button className="dup-hint-dismiss" onClick={dismissHint} aria-label="Schließen">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Description */}
